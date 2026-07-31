@@ -1,0 +1,426 @@
+﻿const HTML = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>TinyChat</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;min-height:100vh;display:flex;justify-content:center;align-items:center}
+.container{width:100%;max-width:420px;height:100vh;max-height:800px;display:flex;flex-direction:column;background:#fff;box-shadow:0 2px 20px rgba(0,0,0,.08);border-radius:16px;overflow:hidden}
+.header{background:#1a73e8;color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+.header h1{font-size:18px;font-weight:600}
+.header .right{display:flex;align-items:center;gap:12px}
+.header .right .lang-btn{background:rgba(255,255,255,.2);border:none;color:#fff;padding:4px 10px;border-radius:12px;cursor:pointer;font-size:12px}
+.header .right .lang-btn:hover{background:rgba(255,255,255,.35)}
+.header .right .logout{background:rgba(255,255,255,.15);border:none;color:#fff;padding:4px 10px;border-radius:12px;cursor:pointer;font-size:12px}
+.page{display:none;flex-direction:column;flex:1;overflow:hidden}
+.page.active{display:flex}
+.form-page{padding:40px 24px;justify-content:center}
+.form-page h2{text-align:center;margin-bottom:24px;color:#1a1a1a;font-size:22px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;margin-bottom:6px;color:#555;font-size:14px}
+.form-group input{width:100%;padding:12px 16px;border:1px solid #ddd;border-radius:10px;font-size:15px;outline:none;transition:border .2s}
+.form-group input:focus{border-color:#1a73e8}
+.btn{width:100%;padding:12px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s}
+.btn-primary{background:#1a73e8;color:#fff}
+.btn-primary:hover{background:#1557b0}
+.btn-secondary{background:#e8f0fe;color:#1a73e8;margin-top:8px}
+.btn-secondary:hover{background:#d2e3fc}
+.error{color:#d93025;font-size:13px;text-align:center;margin-top:10px;min-height:20px}
+.lang-selector{text-align:center;margin-top:24px}
+.lang-selector .lang-btn{border:1px solid #ddd;background:#fff;padding:6px 16px;border-radius:16px;cursor:pointer;font-size:13px;color:#555}
+.lang-selector .lang-btn.active{background:#1a73e8;color:#fff;border-color:#1a73e8}
+.chat-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.chat-header{display:flex;align-items:center;padding:10px 16px;gap:8px;background:#f8f9fa;border-bottom:1px solid #eee}
+.chat-header select{padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;flex:1;outline:none}
+.chat-header span{font-size:12px;color:#666}
+.messages{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.msg{border-radius:12px;padding:8px 14px;max-width:80%;word-break:break-word;line-height:1.5;font-size:14px}
+.msg.system{align-self:center;background:#f0f2f5;color:#666;font-size:12px;border-radius:16px;padding:4px 14px}
+.msg.me{align-self:flex-end;background:#1a73e8;color:#fff}
+.msg.private{background:#fff3cd;color:#856404;align-self:flex-start;border:1px solid #ffeeba}
+.msg.private.me{background:#cce5ff;color:#004085;align-self:flex-end;border:1px solid #b8daff}
+.msg .sender{font-size:11px;font-weight:600;margin-bottom:2px;opacity:.7}
+.msg .time{font-size:10px;opacity:.5;margin-top:2px;text-align:right}
+.input-bar{display:flex;padding:10px 12px;gap:8px;border-top:1px solid #eee;background:#fff}
+.input-bar input{flex:1;padding:10px 14px;border:1px solid #ddd;border-radius:20px;font-size:14px;outline:none}
+.input-bar input:focus{border-color:#1a73e8}
+.input-bar button{padding:10px 20px;border:none;border-radius:20px;background:#1a73e8;color:#fff;font-size:14px;cursor:pointer}
+.input-bar button:disabled{opacity:.5}
+.info{font-size:12px;color:#888;padding:0 16px 8px;text-align:center}
+.footer{text-align:center;padding:12px 16px;font-size:12px;color:#aaa;border-top:1px solid #eee;background:#fff}
+.footer a{color:#1a73e8;text-decoration:none}
+@media(max-width:440px){.container{max-height:none;border-radius:0}.container{height:100vh;width:100vw}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div id="pageLogin" class="page form-page active">
+    <h2 id="loginTitle">💬 小聊 TinyChat</h2>
+    <p id="loginSub" style="text-align:center;color:#888;font-size:14px;margin-bottom:24px"></p>
+    <div class="form-group">
+      <label id="labelUsername">用户名</label>
+      <input id="loginUsername" type="text" maxlength="20" placeholder="">
+    </div>
+    <div class="form-group">
+      <label id="labelPassword">密码</label>
+      <input id="loginPassword" type="password" placeholder="">
+    </div>
+    <button class="btn btn-primary" id="btnLogin" onclick="doLogin()"></button>
+    <button class="btn btn-secondary" id="btnShowRegister" onclick="showRegister()"></button>
+    <div class="error" id="loginError"></div>
+    <div class="lang-selector">
+      <button class="lang-btn" data-lang="zh-CN" onclick="switchLang('zh-CN')">中文</button>
+      <button class="lang-btn" data-lang="en" onclick="switchLang('en')">English</button>
+    </div>
+  </div>
+
+  <div id="pageRegister" class="page form-page">
+    <h2 id="regTitle"></h2>
+    <div class="form-group">
+      <label id="regLabelUsername">用户名</label>
+      <input id="regUsername" type="text" maxlength="20">
+    </div>
+    <div class="form-group">
+      <label id="regLabelPassword">密码</label>
+      <input id="regPassword" type="password">
+    </div>
+    <button class="btn btn-primary" id="btnRegister" onclick="doRegister()"></button>
+    <button class="btn btn-secondary" id="btnBack" onclick="showLogin()"></button>
+    <div class="error" id="regError"></div>
+  </div>
+
+  <div id="pageChat" class="page">
+    <div class="header">
+      <h1>💬 <span id="chatTitle">TinyChat</span></h1>
+      <div class="right">
+        <span id="onlineCount" style="font-size:12px;opacity:.8"></span>
+        <button class="lang-btn" onclick="switchLang(i18n.current === 'zh-CN' ? 'en' : 'zh-CN')">中/En</button>
+        <button class="logout" id="btnLogout" onclick="doLogout()"></button>
+      </div>
+    </div>
+    <div class="chat-header">
+      <select id="privateTo" onchange="togglePrivate()">
+        <option id="optPublic" value="">群聊</option>
+      </select>
+      <span id="privateMode" style="display:none"></span>
+    </div>
+    <div class="messages" id="messages"></div>
+    <div class="info" id="typingInfo"></div>
+    <div class="input-bar">
+      <input id="msgInput" type="text" maxlength="500" onkeydown="if(event.key==='Enter')sendMsg()" autocomplete="off">
+      <button id="btnSend" onclick="sendMsg()"></button>
+    </div>
+    <div class="footer">
+      遇到问题？联系 <a href="mailto:ugo2000@126.com">ugo2000@126.com</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const i18n = {
+  current: 'zh-CN',
+  zh: {
+    loginTitle: '💬 小聊 TinyChat',
+    loginSub: '免费聊天室 · 无需安装',
+    labelUsername: '用户名',
+    labelPassword: '密码',
+    loginBtn: '登 录',
+    showRegisterBtn: '注 册',
+    regTitle: '注册新账号',
+    regLabelUsername: '用户名',
+    regLabelPassword: '密码',
+    regBtn: '注 册',
+    backBtn: '返回登录',
+    sendBtn: '发送',
+    logoutBtn: '退出',
+    system: '系统',
+    selectPrivate: '群聊',
+    privateHint: '私聊模式',
+    placeholder: '输入消息...',
+    registerError: '注册失败',
+    loginError: '登录失败',
+    authError: '认证失败，请重新登录',
+    connected: '已连接',
+    disconnected: '连接断开，重连中...',
+    welcome: '欢迎来到 TinyChat！',
+    logplaceholder_username: '输入用户名 (2-20位)',
+    logplaceholder_password: '输入密码 (至少4位)',
+    regplaceholder_username: '字母、数字或中文',
+    regplaceholder_password: '至少4个字符'
+  },
+  en: {
+    loginTitle: '💬 TinyChat',
+    loginSub: 'Free Chat Room · No Install',
+    labelUsername: 'Username',
+    labelPassword: 'Password',
+    loginBtn: 'Sign In',
+    showRegisterBtn: 'Sign Up',
+    regTitle: 'Create Account',
+    regLabelUsername: 'Username',
+    regLabelPassword: 'Password',
+    regBtn: 'Sign Up',
+    backBtn: 'Back to Login',
+    sendBtn: 'Send',
+    logoutBtn: 'Logout',
+    system: 'System',
+    selectPrivate: 'Public Chat',
+    privateHint: 'Private Chat',
+    placeholder: 'Type a message...',
+    registerError: 'Register failed',
+    loginError: 'Login failed',
+    authError: 'Authentication failed, please login again',
+    connected: 'Connected',
+    disconnected: 'Disconnected, reconnecting...',
+    welcome: 'Welcome to TinyChat!',
+    logplaceholder_username: 'Username (2-20 chars)',
+    logplaceholder_password: 'Password (4+ chars)',
+    regplaceholder_username: 'Letters, numbers or Chinese',
+    regplaceholder_password: 'At least 4 characters'
+  },
+  t(key) {
+    return (this[this.current] || this.zh)[key] || key;
+  }
+};
+
+function switchLang(lang) {
+  i18n.current = lang;
+  localStorage.setItem('tinychat_lang', lang);
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+  applyI18n();
+}
+
+function applyI18n() {
+  document.getElementById('loginTitle').textContent = i18n.t('loginTitle');
+  document.getElementById('loginSub').textContent = i18n.t('loginSub');
+  document.getElementById('labelUsername').textContent = i18n.t('labelUsername');
+  document.getElementById('labelPassword').textContent = i18n.t('labelPassword');
+  document.getElementById('btnLogin').textContent = i18n.t('loginBtn');
+  document.getElementById('btnShowRegister').textContent = i18n.t('showRegisterBtn');
+  document.getElementById('regTitle').textContent = i18n.t('regTitle');
+  document.getElementById('regLabelUsername').textContent = i18n.t('regLabelUsername');
+  document.getElementById('regLabelPassword').textContent = i18n.t('regLabelPassword');
+  document.getElementById('btnRegister').textContent = i18n.t('regBtn');
+  document.getElementById('btnBack').textContent = i18n.t('backBtn');
+  document.getElementById('btnSend').textContent = i18n.t('sendBtn');
+  document.getElementById('btnLogout').textContent = i18n.t('logoutBtn');
+  document.getElementById('loginUsername').placeholder = i18n.t('logplaceholder_username');
+  document.getElementById('loginPassword').placeholder = i18n.t('logplaceholder_password');
+  document.getElementById('regUsername').placeholder = i18n.t('regplaceholder_username');
+  document.getElementById('regPassword').placeholder = i18n.t('regplaceholder_password');
+  document.getElementById('msgInput').placeholder = i18n.t('placeholder');
+  document.getElementById('optPublic').textContent = i18n.t('selectPrivate');
+  document.getElementById('privateMode').textContent = i18n.t('privateHint');
+}
+
+let token = null;
+let username = null;
+let ws = null;
+let reconnectTimer = null;
+let reconnectAttempts = 0;
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showLogin() {
+  showPage('pageLogin');
+  document.getElementById('loginError').textContent = '';
+}
+
+function showRegister() {
+  showPage('pageRegister');
+  document.getElementById('regError').textContent = '';
+}
+
+async function api(path, body) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const res = await fetch('/api' + path, { method: 'POST', headers, body: JSON.stringify(body) });
+  return await res.json();
+}
+
+async function doRegister() {
+  const u = document.getElementById('regUsername').value.trim();
+  const p = document.getElementById('regPassword').value;
+  if (!u || !p) { document.getElementById('regError').textContent = i18n.t('registerError'); return; }
+  const r = await api('/register', { username: u, password: p });
+  if (r.ok) {
+    document.getElementById('loginUsername').value = u;
+    document.getElementById('loginPassword').value = p;
+    showLogin();
+  } else {
+    document.getElementById('regError').textContent = r.error || i18n.t('registerError');
+  }
+}
+
+async function doLogin() {
+  const u = document.getElementById('loginUsername').value.trim();
+  const p = document.getElementById('loginPassword').value;
+  if (!u || !p) { document.getElementById('loginError').textContent = i18n.t('loginError'); return; }
+  const r = await api('/login', { username: u, password: p });
+  if (r.ok) {
+    token = r.token;
+    username = r.username;
+    startChat();
+  } else {
+    document.getElementById('loginError').textContent = r.error || i18n.t('loginError');
+  }
+}
+
+function doLogout() {
+  if (ws) { ws.close(); ws = null; }
+  token = null; username = null;
+  showPage('pageLogin');
+}
+
+function connectWS() {
+  if (ws) { try { ws.close(); } catch(e) {} ws = null; }
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const wsUrl = proto + '//' + location.host + '/chat?token=' + encodeURIComponent(token);
+  ws = new WebSocket(wsUrl);
+  ws.onopen = () => {
+    reconnectAttempts = 0;
+    addMessage({ type: 'system', text: '\u2713 ' + i18n.t('connected') });
+  };
+  ws.onmessage = (e) => {
+    try { handleWSMessage(JSON.parse(e.data)); } catch(err) {}
+  };
+  ws.onclose = () => {
+    ws = null;
+    addMessage({ type: 'system', text: '\u26a0 ' + i18n.t('disconnected') });
+    scheduleReconnect();
+  };
+  ws.onerror = () => {};
+}
+
+function scheduleReconnect() {
+  if (reconnectTimer) clearTimeout(reconnectTimer);
+  reconnectAttempts++;
+  const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+  reconnectTimer = setTimeout(() => { if (token) connectWS(); }, delay);
+}
+
+function handleWSMessage(msg) {
+  switch (msg.type) {
+    case 'init':
+      document.getElementById('privateTo').innerHTML = '<option value="">' + i18n.t('selectPrivate') + '</option>';
+      msg.onlineUsers.forEach(u => { if (u !== username) addOnlineUser(u); });
+      document.getElementById('onlineCount').textContent = msg.onlineUsers.length;
+      msg.messages.forEach(m => addMessage(m));
+      document.getElementById('msgInput').disabled = false;
+      document.getElementById('btnSend').disabled = false;
+      addMessage({ type: 'system', text: '\ud83d\udc4b ' + i18n.t('welcome') });
+      break;
+    case 'message': addMessage(msg); break;
+    case 'online':
+      if (!document.querySelector('option[value="' + msg.username + '"]') && msg.username !== username) addOnlineUser(msg.username);
+      document.getElementById('onlineCount').textContent = msg.onlineUsers.length;
+      break;
+    case 'offline':
+      { const opt = document.querySelector('option[value="' + msg.username + '"]'); if (opt) opt.remove(); }
+      document.getElementById('onlineCount').textContent = msg.onlineUsers.length;
+      break;
+    case 'private': addPrivateMessage(msg); break;
+  }
+}
+
+function addOnlineUser(user) {
+  const sel = document.getElementById('privateTo');
+  const opt = document.createElement('option');
+  opt.value = user;
+  opt.textContent = '\u2709 ' + user;
+  sel.appendChild(opt);
+}
+
+function sendMsg() {
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text || !ws) return;
+  input.value = '';
+  const to = document.getElementById('privateTo').value;
+  ws.send(JSON.stringify(to ? { type: 'private', to, text } : { type: 'message', text }));
+  input.focus();
+}
+
+function togglePrivate() {
+  const hint = document.getElementById('privateMode');
+  hint.style.display = document.getElementById('privateTo').value ? 'inline' : 'none';
+}
+
+function addMessage(msg) {
+  const div = document.getElementById('messages');
+  const el = document.createElement('div');
+  if (msg.type === 'system') {
+    el.className = 'msg system';
+    el.textContent = msg.text;
+  } else {
+    el.className = 'msg' + (msg.username === username ? ' me' : '');
+    el.innerHTML = '<div class="sender">' + esc(msg.username) + '</div>' + esc(msg.text) +
+      '<div class="time">' + timeAgo(msg.timestamp) + '</div>';
+  }
+  div.appendChild(el);
+  div.scrollTop = div.scrollHeight;
+}
+
+function addPrivateMessage(msg) {
+  const div = document.getElementById('messages');
+  const el = document.createElement('div');
+  const isOutgoing = msg.direction === 'outgoing';
+  el.className = 'msg private' + (isOutgoing ? ' me' : '');
+  const label = '\ud83d\udd12 ' + esc(msg.from) + ' \u2192 ' + esc(msg.to);
+  el.innerHTML = '<div class="sender">' + label + '</div>' + esc(msg.text) +
+    '<div class="time">' + timeAgo(msg.timestamp) + '</div>';
+  div.appendChild(el);
+  div.scrollTop = div.scrollHeight;
+}
+
+function timeAgo(ts) {
+  const d = new Date(ts);
+  return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+(function init() {
+  const savedLang = localStorage.getItem('tinychat_lang');
+  if (savedLang) i18n.current = savedLang;
+  applyI18n();
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === i18n.current);
+  });
+  const savedToken = localStorage.getItem('tinychat_token');
+  const savedUser = localStorage.getItem('tinychat_username');
+  if (savedToken && savedUser) {
+    token = savedToken;
+    username = savedUser;
+    startChat();
+  }
+})();
+
+function startChat() {
+  localStorage.setItem('tinychat_token', token);
+  localStorage.setItem('tinychat_username', username);
+  showPage('pageChat');
+  document.getElementById('msgInput').disabled = true;
+  document.getElementById('btnSend').disabled = true;
+  document.getElementById('messages').innerHTML = '';
+  document.getElementById('privateTo').innerHTML = '<option value="">' + i18n.t('selectPrivate') + '</option>';
+  connectWS();
+  document.getElementById('loginError').textContent = '';
+  document.getElementById('regError').textContent = '';
+}
+</script>
+</body>
+</html>
+`;
+
+export default HTML;
