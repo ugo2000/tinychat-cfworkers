@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ugochat 管理后台</title>
+<style>
+body{font-family:-apple-system,Segoe UI,Roboto,'Microsoft YaHei',sans-serif;margin:0;background:#f5f6f8;color:#222}
+.header{background:#1a73e8;color:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:18px;margin:0}
+.wrap{max-width:1000px;margin:24px auto;padding:0 16px}
+.cards{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.card{flex:1;min-width:140px;background:#fff;border-radius:12px;padding:16px 20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.card .num{font-size:26px;font-weight:700;color:#1a73e8}
+.card .lbl{font-size:13px;color:#666;margin-top:4px}
+.login-box{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,.08);max-width:360px;margin:80px auto}
+.login-box input{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box}
+.login-box button{width:100%;margin-top:12px;padding:10px;border:none;border-radius:8px;background:#1a73e8;color:#fff;font-size:15px;cursor:pointer}
+.login-box .err{color:#d93025;font-size:13px;margin-top:8px;min-height:16px}
+.toolbar{display:flex;gap:8px;margin-bottom:12px;align-items:center}
+.toolbar input{padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px}
+.toolbar button{padding:8px 14px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer}
+.toolbar button.primary{background:#1a73e8;color:#fff;border-color:#1a73e8}
+.table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.table th,.table td{padding:10px 12px;text-align:left;font-size:13px;border-bottom:1px solid #eee}
+.table th{background:#fafafa;color:#555;font-weight:600}
+.table tr:hover{background:#f9fbff}
+.badge-on{color:#1e8e3e;font-weight:600}.badge-off{color:#999}
+.empty{text-align:center;color:#999;padding:40px}
+#panel{display:none}
+</style>
+</head>
+<body>
+<div class="topnav" style="background:#1557b0;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:12px 20px"><span style="font-weight:700;font-size:16px">💬 ugochat</span><span><a href="/" style="color:#fff;text-decoration:none;font-size:14px;margin-left:14px">聊天 Chat</a><a href="/about" style="color:#fff;text-decoration:none;font-size:14px;margin-left:14px">关于 About</a><a href="/pricing" style="color:#fff;text-decoration:none;font-size:14px;margin-left:14px">套餐 Plans</a></span></div>
+<div id="login" class="login-box">
+  <h2 style="margin-top:0">管理后台登录</h2>
+  <input id="adminPwd" type="password" placeholder="管理密码" onkeydown="if(event.key==='Enter')doLogin()">
+  <button onclick="doLogin()">进入</button>
+  <div class="err" id="adminErr"></div>
+</div>
+<div id="panel">
+  <div class="header"><h1>ugochat 管理后台</h1><button onclick="logout()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 14px;border-radius:8px;cursor:pointer">退出</button></div>
+  <div class="wrap">
+    <div class="cards">
+      <div class="card"><div class="num" id="stTotal">-</div><div class="lbl">注册用户总数</div></div>
+      <div class="card"><div class="num" id="stOnline">-</div><div class="lbl">当前在线</div></div>
+      <div class="card"><div class="num" id="stEmail">-</div><div class="lbl">已填邮箱</div></div>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="num" id="stVisits">-</div><div class="lbl">累计访问（页面浏览）</div></div>
+      <div class="card"><div class="num" id="stToday">-</div><div class="lbl">今日访问</div></div>
+      <div class="card"><div class="num" id="stMsg">-</div><div class="lbl">累计消息数</div></div>
+      <div class="card"><div class="num" id="stReg">-</div><div class="lbl">累计注册</div></div>
+      <div class="card"><div class="num" id="stLogin">-</div><div class="lbl">累计登录</div></div>
+      <div class="card"><div class="num" id="stIP">-</div><div class="lbl">独立访客 IP</div></div>
+    </div>
+    <div class="cards">
+      <div class="card" style="flex:1 1 220px"><div class="num" style="font-size:16px">国家/地区</div><div class="lbl" id="topCountries" style="font-size:13px;color:#333;margin-top:6px;line-height:1.7">-</div></div>
+      <div class="card" style="flex:1 1 220px"><div class="num" style="font-size:16px">城市</div><div class="lbl" id="topCities" style="font-size:13px;color:#333;margin-top:6px;line-height:1.7">-</div></div>
+    </div>
+    <div class="wrap" style="margin-top:8px">
+      <h3 style="font-size:15px;color:#333;margin:8px 0">最近访问记录</h3>
+      <table class="table"><thead><tr><th>时间</th><th>IP</th><th>国家</th><th>城市</th></tr></thead><tbody id="visitorBody"></tbody></table>
+    </div>
+    <div class="toolbar">
+      <input id="search" placeholder="搜索用户名/邮箱" oninput="render()">
+      <select id="sortSel" onchange="render()" style="padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px">
+        <option value="createdAt_desc">注册时间（新→旧）</option>
+        <option value="createdAt_asc">注册时间（旧→新）</option>
+        <option value="quota_desc">剩余次数（多→少）</option>
+        <option value="quota_asc">剩余次数（少→多）</option>
+        <option value="name_asc">用户名（A→Z）</option>
+        <option value="online_first">在线优先</option>
+      </select>
+      <button class="primary" onclick="load()">刷新</button>
+      <button onclick="exportCSV()">导出 CSV</button>
+      <button onclick="clearVisitors()">清空访问统计</button>
+    </div>
+    <div class="wrap" style="margin-top:16px;padding:14px;background:#fffbe6;border:1px solid #ffe58f;border-radius:10px">
+      <h3 style="font-size:15px;margin:0 0 8px">💰 支付收款码（用户购买时显示）</h3>
+      <div style="font-size:13px;color:#666;margin-bottom:10px">上传你的微信（或支付宝）收款码截图。用户扫码付款后点「我已支付」即可开通无限条。</div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <input type="file" id="qrFile" accept="image/*" style="font-size:13px">
+        <button class="primary" onclick="uploadQR()">上传</button>
+        <span id="qrStatus" style="font-size:13px;color:#888"></span>
+      </div>
+      <div style="margin-top:10px"><img id="qrPreview" style="max-width:160px;max-height:160px;border:1px solid #ddd;border-radius:6px;display:none"></div>
+    </div>
+    <table class="table"><thead><tr><th>用户名</th><th>邮箱</th><th>注册时间</th><th>剩余次数</th><th>状态</th></tr></thead>
+    <tbody id="tbody"></tbody></table>
+    <div class="empty" id="empty" style="display:none">暂无数据</div>
+  </div>
+</div>
+<script>
+let PWD=''; let DATA={users:[],stats:{}}; let SORT='createdAt_desc';
+function doLogin(){
+  const p=document.getElementById('adminPwd').value;
+  document.getElementById('adminErr').textContent='';
+  fetch('/admin/users?pwd='+encodeURIComponent(p)).then(r=>{if(r.status===401){document.getElementById('adminErr').textContent='密码错误';return null;}return r.json();}).then(d=>{if(d){PWD=p;localStorage.setItem('ugochat_admin_pwd',p);document.getElementById('login').style.display='none';document.getElementById('panel').style.display='block';DATA=d;render();loadQR();}}).catch(e=>{document.getElementById('adminErr').textContent='加载失败: '+e.message;});
+}
+function logout(){localStorage.removeItem('ugochat_admin_pwd');location.reload();}
+function load(){fetch('/admin/users?pwd='+encodeURIComponent(PWD)).then(r=>r.json()).then(d=>{if(d&&d.users){DATA=d;render();}}).catch(e=>{});}
+function clearVisitors(){if(!confirm('确定清空访问统计？将清除独立IP、地区分布、最近访问记录'))return;fetch('/admin/clear-visitors?pwd='+encodeURIComponent(PWD)).then(r=>r.json()).then(d=>{if(d.ok){load();}}).catch(e=>{});}
+async function loadQR(){const r=await fetch('/api/pay-qr?pwd='+encodeURIComponent(PWD));if(!r.ok)return;const d=await r.json().catch(()=>({}));const img=document.getElementById('qrPreview');const st=document.getElementById('qrStatus');if(d&&d.dataUrl){img.src=d.dataUrl;img.style.display='inline-block';st.textContent='已上传（'+(d.kind||'wechat')+'）';}else{st.textContent='未上传';}}
+async function uploadQR(){const f=document.getElementById('qrFile').files[0];if(!f){alert('请先选文件');return;}const st=document.getElementById('qrStatus');st.textContent='上传中...';const reader=new FileReader();reader.onload=async()=>{const dataUrl=reader.result;const kind=prompt('这是什么收款码？输入 wechat 或 alipay','wechat');if(!kind)return;try{const r=await fetch('/api/pay-qr?pwd='+encodeURIComponent(PWD),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({dataUrl,kind})});const d=await r.json();if(d.ok){st.textContent='✓ 上传成功';loadQR();}else st.textContent='✗ 失败：'+(d.error||'');}catch(e){st.textContent='✗ '+e.message;}};reader.readAsDataURL(f);}
+function fmt(ts){if(!ts)return '-';const d=new Date(ts);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function esc(s){return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+function render(){
+  SORT=document.getElementById('sortSel').value||'createdAt_desc';
+  const q=(document.getElementById('search').value||'').toLowerCase();
+  const users=(DATA.users||[]).filter(u=>(u.username||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q));
+  users.sort((a,b)=>{
+    let r=0;
+    if(SORT==='createdAt_desc') r=(b.createdAt||0)-(a.createdAt||0);
+    else if(SORT==='createdAt_asc') r=(a.createdAt||0)-(b.createdAt||0);
+    else if(SORT==='quota_desc') r=(b.quota===-1?1e12:b.quota)-(a.quota===-1?1e12:a.quota);
+    else if(SORT==='quota_asc') r=(a.quota===-1?-1:b.quota)-(b.quota===-1?-1:a.quota);
+    else if(SORT==='name_asc') r=String(a.username).localeCompare(String(b.username));
+    else if(SORT==='online_first') r=(b.online?1:0)-(a.online?1:0);
+    return r;
+  });
+  document.getElementById('stTotal').textContent=DATA.stats.total!=null?DATA.stats.total:DATA.users.length;
+  document.getElementById('stOnline').textContent=DATA.stats.online!=null?DATA.stats.online:DATA.users.filter(u=>u.online).length;
+  document.getElementById('stEmail').textContent=DATA.stats.withEmail!=null?DATA.stats.withEmail:DATA.users.filter(u=>u.email).length;
+  document.getElementById('stVisits').textContent=DATA.stats.visits!=null?DATA.stats.visits:0;
+  document.getElementById('stToday').textContent=DATA.stats.todayVisits!=null?DATA.stats.todayVisits:0;
+  document.getElementById('stMsg').textContent=DATA.stats.messagesTotal!=null?DATA.stats.messagesTotal:0;
+  document.getElementById('stReg').textContent=DATA.stats.registersTotal!=null?DATA.stats.registersTotal:0;
+  document.getElementById('stLogin').textContent=DATA.stats.loginsTotal!=null?DATA.stats.loginsTotal:0;
+  document.getElementById('stIP').textContent=DATA.stats.uniqueIPs!=null?DATA.stats.uniqueIPs:0;
+  const bc=DATA.stats.byCountry||{};const bcArr=Object.keys(bc).map(k=>k+': '+bc[k]).sort((a,b)=>b.localeCompare(a));
+  document.getElementById('topCountries').innerHTML=bcArr.length?bcArr.slice(0,8).join('<br>'):'暂无数据';
+  const cc=DATA.stats.byCity||{};const ccArr=Object.keys(cc).map(k=>k+': '+cc[k]).sort((a,b)=>b.localeCompare(a));
+  document.getElementById('topCities').innerHTML=ccArr.length?ccArr.slice(0,8).join('<br>'):'暂无数据';
+  const vb=document.getElementById('visitorBody');vb.innerHTML='';
+  (DATA.visitorLog||[]).forEach(v=>{const tr=document.createElement('tr');tr.innerHTML='<td>'+fmt(v.ts)+'</td><td>'+(v.ip||'-')+'</td><td>'+(v.country||'-')+'</td><td>'+(v.city||'-')+'</td>';vb.appendChild(tr);});
+  const tb=document.getElementById('tbody');tb.innerHTML='';
+  document.getElementById('empty').style.display=users.length?'none':'block';
+  users.forEach(u=>{const tr=document.createElement('tr');tr.innerHTML='<td>'+esc(u.username)+'</td><td>'+(u.email?esc(u.email):'<span style="color:#bbb">-</span>')+'</td><td>'+fmt(u.createdAt)+'</td><td>'+(u.quota===-1?'∞':u.quota)+'</td><td>'+(u.online?'<span class="badge-on">在线</span>':'<span class="badge-off">离线</span>')+'</td>';tb.appendChild(tr);});
+}
+function exportCSV(){
+  const rows=[['用户名','邮箱','注册时间','剩余次数','在线']];
+  (DATA.users||[]).forEach(u=>rows.push([u.username,u.email||'',fmt(u.createdAt),u.quota===-1?'∞':u.quota,u.online?'1':'0']));
+  const csv=String.fromCharCode(0xFEFF)+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join(String.fromCharCode(10));
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ugochat_users.csv';a.click();
+}
+(function(){const saved=localStorage.getItem('ugochat_admin_pwd');if(saved){PWD=saved;document.getElementById('adminPwd').value=saved;}})();
+</script>
+</body>
+</html>

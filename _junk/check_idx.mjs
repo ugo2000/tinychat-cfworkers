@@ -1,0 +1,10 @@
+const fs = require('fs');
+const b = fs.readFileSync('src/index.js');
+console.log('index.js size:', b.length);
+const s = b.toString('utf8');
+console.log('handlePayApprove:', s.includes('handlePayApprove'));
+console.log('handlePayConfirm:', s.includes('handlePayConfirm'));
+console.log('ADMIN_PASSWORD env:', s.includes('env.ADMIN_PASSWORD'));
+console.log('doBuy:', s.includes('doBuy'));
+console.log('quota:', s.includes('quota'));
+console.log('lines:', s.split('\n').length);

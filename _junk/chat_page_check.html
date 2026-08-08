@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ugochat</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;min-height:100vh;display:flex;justify-content:center;align-items:center}
+.container{width:100%;max-width:420px;height:100vh;max-height:800px;display:flex;flex-direction:column;background:#fff;box-shadow:0 2px 20px rgba(0,0,0,.08);border-radius:16px;overflow:hidden}
+.header{background:#1a73e8;color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+.header h1{font-size:18px;font-weight:600}
+.header .right{display:flex;align-items:center;gap:12px}
+.header .right .lang-btn{background:rgba(255,255,255,.2);border:none;color:#fff;padding:4px 10px;border-radius:12px;cursor:pointer;font-size:12px}
+.header .right .lang-btn:hover{background:rgba(255,255,255,.35)}
+.header .right .logout{background:rgba(255,255,255,.15);border:none;color:#fff;padding:4px 10px;border-radius:12px;cursor:pointer;font-size:12px}
+.page{display:none;flex-direction:column;flex:1;overflow:hidden}
+.page.active{display:flex}
+.form-page{padding:40px 24px;justify-content:center}
+.form-page h2{text-align:center;margin-bottom:24px;color:#1a1a1a;font-size:22px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;margin-bottom:6px;color:#555;font-size:14px}
+.form-group input{width:100%;padding:12px 16px;border:1px solid #ddd;border-radius:10px;font-size:15px;outline:none;transition:border .2s}
+.form-group input:focus{border-color:#1a73e8}
+.btn{width:100%;padding:12px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s}
+.btn-primary{background:#1a73e8;color:#fff}
+.btn-primary:hover{background:#1557b0}
+.btn-secondary{background:#e8f0fe;color:#1a73e8;margin-top:8px}
+.btn-secondary:hover{background:#d2e3fc}
+.error{color:#d93025;font-size:13px;text-align:center;margin-top:10px;min-height:20px}
+.lang-selector{text-align:center;margin-top:24px}
+.lang-selector .lang-btn{border:1px solid #ddd;background:#fff;padding:6px 16px;border-radius:16px;cursor:pointer;font-size:13px;color:#555}
+.lang-selector .lang-btn.active{background:#1a73e8;color:#fff;border-color:#1a73e8}
+.chat-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.chat-header{display:flex;align-items:center;padding:10px 16px;gap:8px;background:#f8f9fa;border-bottom:1px solid #eee}
+.chat-header select{padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;flex:1;outline:none}
+.chat-header span{font-size:12px;color:#666}
+.messages{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.msg{border-radius:12px;padding:8px 14px;max-width:80%;word-break:break-word;line-height:1.5;font-size:14px}
+.msg.system{align-self:center;background:#f0f2f5;color:#666;font-size:12px;border-radius:16px;padding:4px 14px}
+.msg.me{align-self:flex-end;background:#1a73e8;color:#fff}
+.msg.private{background:#fff3cd;color:#856404;align-self:flex-start;border:1px solid #ffeeba}
+.msg.private.me{background:#cce5ff;color:#004085;align-self:flex-end;border:1px solid #b8daff}
+.msg .sender{font-size:11px;font-weight:600;margin-bottom:2px;opacity:.7}
+.msg .time{font-size:10px;opacity:.5;margin-top:2px;text-align:right}
+.input-bar{display:flex;padding:10px 12px;gap:8px;border-top:1px solid #eee;background:#fff}
+.input-bar input{flex:1;padding:10px 14px;border:1px solid #ddd;border-radius:20px;font-size:14px;outline:none}
+.input-bar input:focus{border-color:#1a73e8}
+.input-bar button{padding:10px 20px;border:none;border-radius:20px;background:#1a73e8;color:#fff;font-size:14px;cursor:pointer}
+.input-bar button:disabled{opacity:.5}
+.info{font-size:12px;color:#888;padding:0 16px 8px;text-align:center}
+.footer{text-align:center;padding:12px 16px;font-size:12px;color:#aaa;border-top:1px solid #eee;background:#fff}
+.footer a{color:#1a73e8;text-decoration:none}
+.topnav{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#1557b0;color:#fff;flex:0 0 auto}
+.topnav .nav-brand{font-size:15px;font-weight:700;color:#fff;text-decoration:none;white-space:nowrap}
+.topnav .nav-links{display:flex;gap:4px;align-items:center}
+.topnav .nav-link{color:rgba(255,255,255,.82);text-decoration:none;font-size:13px;padding:5px 10px;border-radius:8px;white-space:nowrap}
+.topnav .nav-link:hover{background:rgba(255,255,255,.18);color:#fff}
+.topnav .nav-link.active{background:rgba(255,255,255,.28);color:#fff}
+.topnav .nav-right{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.topnav .nav-lang{background:rgba(255,255,255,.2);border:none;color:#fff;padding:4px 10px;border-radius:12px;cursor:pointer;font-size:12px}
+.topnav .nav-lang:hover{background:rgba(255,255,255,.35)}
+.topnav .nav-logout{cursor:pointer}
+@media(max-width:440px){.topnav .nav-link{padding:5px 7px;font-size:12px}.topnav .nav-brand{font-size:14px}.topnav .nav-lang{padding:4px 7px;font-size:11px}}
+.quota-badge{font-size:12px;color:#1a73e8;background:#e8f0fe;padding:4px 10px;border-radius:12px;white-space:nowrap;cursor:pointer}
+.quota-badge.low{color:#e65100;background:#fff3e0}
+.quota-badge.empty{color:#fff;background:#f44336}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:50}
+.modal-box{background:#fff;border-radius:16px;padding:24px;width:90%;max-width:340px;box-shadow:0 8px 30px rgba(0,0,0,.2)}
+.modal-box h3{text-align:center;margin-bottom:6px;color:#1a1a1a}
+.buy-note{text-align:center;font-size:12px;color:#888;margin-bottom:16px}
+.buy-options{display:flex;flex-direction:column;gap:10px}
+.buy-opt{display:flex;flex-direction:column;align-items:center;padding:12px;border:1px solid #ddd;border-radius:12px;background:#fff;cursor:pointer;font-size:14px;color:#333;transition:border .2s,background .2s}
+.buy-opt:hover{border-color:#1a73e8;background:#e8f0fe}
+.buy-opt small{color:#1a73e8;font-weight:600}
+.buy-close{width:100%;margin-top:14px;padding:10px;border:none;border-radius:10px;background:#eee;color:#555;cursor:pointer;font-size:14px}
+.buy-result{text-align:center;font-size:13px;color:#1a73e8;margin-top:10px;min-height:18px}
+@media(max-width:440px){.container{max-height:none;border-radius:0}.container{height:100vh;width:100vw}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="topnav">
+    <a class="nav-brand" href="javascript:void(0)" onclick="navChat()">💬 ugochat</a>
+    <div class="nav-links">
+      <a class="nav-link" href="javascript:void(0)" onclick="navChat()" id="navChat" data-i18n="navChat"></a>
+      <a class="nav-link" href="javascript:void(0)" onclick="navRandom()" id="navRandom" data-i18n="navRandom"></a>
+      <a class="nav-link" href="/about" target="_blank" id="navAbout" data-i18n="navAbout"></a>
+      <a class="nav-link" href="/pricing" target="_blank" id="navPricing" data-i18n="navPricing"></a>
+    </div>
+    <div class="nav-right">
+      <button class="nav-lang" id="navLang" onclick="switchLang(i18n.current === 'zh-CN' ? 'en' : 'zh-CN')" data-i18n="navLang"></button>
+      <a class="nav-link nav-logout" id="navLogout" onclick="doLogout()" style="display:none" data-i18n="logoutBtn"></a>
+    </div>
+  </div>
+  <div id="pageLogin" class="page form-page active">
+    <h2 id="loginTitle">💬 小聊 ugochat</h2>
+    <p id="loginSub" style="text-align:center;color:#888;font-size:14px;margin-bottom:24px"></p>
+    <div class="form-group">
+      <label id="labelUsername">用户名</label>
+      <input id="loginUsername" type="text" maxlength="20" placeholder="">
+    </div>
+    <div class="form-group">
+      <label id="labelPassword">密码</label>
+      <input id="loginPassword" type="password" placeholder="">
+    </div>
+    <button class="btn btn-primary" id="btnLogin" onclick="doLogin()"></button>
+    <button class="btn btn-secondary" id="btnShowRegister" onclick="showRegister()"></button>
+    <div class="error" id="loginError"></div>
+    <div class="lang-selector">
+      <button class="lang-btn" data-lang="zh-CN" onclick="switchLang('zh-CN')">中文</button>
+      <button class="lang-btn" data-lang="en" onclick="switchLang('en')">English</button>
+    </div>
+    <div class="about-link"><a href="/about" target="_blank">What is ugochat? / 关于</a></div>
+  </div>
+
+  <div id="pageRegister" class="page form-page">
+    <h2 id="regTitle"></h2>
+    <div class="form-group">
+      <label id="regLabelUsername">用户名</label>
+      <input id="regUsername" type="text" maxlength="20">
+    </div>
+    <div class="form-group">
+      <label id="regLabelPassword">密码</label>
+      <input id="regPassword" type="password">
+    </div>
+    <div class="form-group">
+      <label id="regLabelEmail">邮箱（可选）</label>
+      <input id="regEmail" type="email" maxlength="60" placeholder="you@example.com">
+    </div>
+    <button class="btn btn-primary" id="btnRegister" onclick="doRegister()"></button>
+    <button class="btn btn-secondary" id="btnBack" onclick="showLogin()"></button>
+    <div class="error" id="regError"></div>
+  </div>
+
+  <div id="pageChat" class="page">
+    <div class="header">
+      <h1>💬 <span id="chatTitle">ugochat</span></h1>
+      <div class="right">
+        <span id="connDot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#d93025;margin-right:8px;vertical-align:middle" title="disconnected"></span>
+        <span id="onlineCount" style="font-size:12px;opacity:.8"></span>
+      </div>
+    </div>
+    <div class="chat-header">
+      <select id="privateTo" onchange="onSelectChange()">
+        <option id="optPublic" value=""></option>
+      </select>
+      <div class="dm-target">
+        <input id="dmInput" type="text" maxlength="30" placeholder="输入用户名私聊" onkeydown="if(event.key==='Enter')applyDmInput()" autocomplete="off">
+        <button class="dm-apply" id="dmBtn" onclick="applyDmInput()"></button>
+      </div>
+      <button class="random-btn" id="btnRandom" onclick="startRandom()">🎲 随机聊</button>
+      <span id="privateMode" style="display:none"></span>
+      <span id="quotaBadge" class="quota-badge" title="">💬 <span id="quotaNum">--</span></span>
+    </div>
+    <div class="random-banner" id="randomBanner" style="display:none">
+      <span id="randomStatus">寻找陌生人...</span>
+      <button class="random-next" onclick="nextRandom()">下一位 (Next)</button>
+      <button class="random-exit" onclick="exitRandom()">退出 (Exit)</button>
+    </div>
+    <div class="messages" id="messages"></div>
+    <div class="info" id="typingInfo"></div>
+    <div class="input-bar">
+      <input id="msgInput" type="text" maxlength="500" onkeydown="if(event.key==='Enter')sendMsg()" autocomplete="off">
+      <button id="btnSend" onclick="sendMsg()"></button>
+    </div>
+    <div class="footer">
+      <a href="/about" target="_blank" id="footerAbout" data-i18n="footerAbout">关于 ugochat</a> · <span id="footerContact" data-i18n="footerContact">遇到问题？联系</span> <a href="mailto:ugo2000@126.com">ugo2000@126.com</a>
+    </div>
+  </div>
+</div>
+
+<div id="buyModal" class="modal" style="display:none">
+  <div class="modal-box">
+    <h3 id="buyModalTitle"></h3>
+    <p class="buy-note" id="buyModalNote"></p>
+    <div class="buy-options">
+      <button class="buy-opt" onclick="doBuy('once')"><b id="buyOnce"></b><br><small id="buyOncePrice">¥499（永久）</small></button>
+      <button class="buy-opt" onclick="doBuy('sub')"><b id="buySub"></b><br><small id="buySubPrice">¥29.9/月</small></button>
+      <button class="buy-opt" onclick="doBuy('sub_year')"><b id="buyYear"></b><br><small id="buyYearPrice">¥299/年</small></button>
+    </div>
+    <button class="buy-close" onclick="closeBuy()"></button>
+    <div id="buyResult" class="buy-result"></div>
+  </div>
+</div>
+
+<style>
+.dm-target{display:flex;align-items:center;gap:6px;padding:4px 0}
+.dm-target input{flex:1;min-width:0;font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:10px;outline:none}
+.dm-target input:focus{border-color:#1a73e8}
+.dm-apply{flex:0 0 auto;font-size:12px;padding:5px 12px;border:none;border-radius:10px;background:#1a73e8;color:#fff;cursor:pointer}
+.dm-apply:hover{background:#1557b0}
+#privateTo{font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:10px;background:#fff;color:#333;max-width:140px}
+.geo{font-size:11px;opacity:.7;margin-left:6px;font-weight:normal}
+.random-btn{flex:0 0 auto;font-size:12px;padding:5px 12px;border:none;border-radius:10px;background:#7b4dff;color:#fff;cursor:pointer}
+.random-btn:hover{background:#653cd6}
+.random-banner{display:flex;align-items:center;gap:8px;padding:6px 12px;background:#f3edff;border-bottom:1px solid #e3d9ff;font-size:13px;color:#5a3db8}
+.random-banner #randomStatus{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.random-next{flex:0 0 auto;font-size:12px;padding:4px 10px;border:none;border-radius:8px;background:#7b4dff;color:#fff;cursor:pointer}
+.random-exit{flex:0 0 auto;font-size:12px;padding:4px 10px;border:none;border-radius:8px;background:#e0e0e0;color:#444;cursor:pointer}
+.about-link{text-align:center;margin-top:18px;font-size:13px}
+.about-link a{color:#1a73e8;text-decoration:none}
+.about-link a:hover{text-decoration:underline}
+</style>
+
+<script>
+const i18n = {
+  current: 'zh-CN',
+  zh: {
+    loginTitle: '💬 小聊 ugochat',
+    loginSub: '免费聊天室 · 无需安装',
+    labelUsername: '用户名',
+    labelPassword: '密码',
+    loginBtn: '登 录',
+    showRegisterBtn: '注 册',
+    regTitle: '注册新账号',
+    regLabelUsername: '用户名',
+    regLabelPassword: '密码',
+    regBtn: '注 册',
+    backBtn: '返回登录',
+    sendBtn: '发送',
+    logoutBtn: '退出',
+    system: '系统',
+    selectPrivate: '群聊',
+    privateHint: '正在私聊：{u}',
+    placeholder: '输入消息...',
+    registerError: '注册失败',
+    loginError: '登录失败',
+    authError: '认证失败，请重新登录',
+    connected: '已连接',
+    disconnected: '连接断开',
+    reconnecting: '正在重连...',
+    sessionExpired: '登录已失效，请重新登录',
+    welcome: '欢迎来到 ugochat！',
+    logplaceholder_username: '输入用户名 (2-20位)',
+    logplaceholder_password: '输入密码 (至少4位)',
+    regplaceholder_username: '字母、数字或中文',
+    regplaceholder_password: '至少4个字符',
+    regplaceholder_email: '邮箱（可选）',
+    quotaLabel: '剩余次数',
+    quotaEmpty: '免费额度已用完',
+    buyTitle: '购买消息额度',
+    buyOnce: '一次性购买（无限条）',
+    buySub: '月度订阅（无限条）',
+    buyYear: '年度订阅（无限条）',
+    buyOncePrice: '¥499（永久）',
+    buySubPrice: '¥29.9/月',
+    buyYearPrice: '¥299/年',
+    dmPlaceholder: '输入用户名私聊',
+    dmBtn: '私聊',
+    selectPrivate: '群聊',
+    footerAbout: '关于 ugochat',
+    footerContact: '遇到问题？联系',
+    buyBtn: '立即购买',
+    buyNote: '当前为模拟支付，点击即到账',
+    buyClose: '关闭',
+    buyFail: '购买失败',
+    buySuccess: '成功，剩余',
+    randomBtn: '🎲 随机聊',
+    randomFinding: '正在寻找陌生人...',
+    randomPaired: '已匹配陌生人',
+    randomNext: '下一位',
+    randomExit: '退出随机',
+    randomPeerLeft: '对方已离开随机聊天',
+    randomWaiting: '正在等待陌生人，可先去群聊逛逛~',
+    navChat: '聊天',
+    navRandom: '随机聊',
+    navAbout: '关于',
+    navPricing: '套餐',
+    navLang: '中/En'
+  },
+  en: {
+    loginTitle: '💬 ugochat',
+    loginSub: 'Free Chat Room · No Install',
+    labelUsername: 'Username',
+    labelPassword: 'Password',
+    loginBtn: 'Sign In',
+    showRegisterBtn: 'Sign Up',
+    regTitle: 'Create Account',
+    regLabelUsername: 'Username',
+    regLabelPassword: 'Password',
+    regBtn: 'Sign Up',
+    backBtn: 'Back to Login',
+    sendBtn: 'Send',
+    logoutBtn: 'Logout',
+    system: 'System',
+    selectPrivate: 'Public Chat',
+    privateHint: 'Private with {u}',
+    placeholder: 'Type a message...',
+    registerError: 'Register failed',
+    loginError: 'Login failed',
+    authError: 'Authentication failed, please login again',
+    connected: 'Connected',
+    disconnected: 'Disconnected',
+    reconnecting: 'Reconnecting...',
+    sessionExpired: 'Session expired, please log in again',
+    welcome: 'Welcome to ugochat!',
+    logplaceholder_username: 'Username (2-20 chars)',
+    logplaceholder_password: 'Password (4+ chars)',
+    regplaceholder_username: 'Letters, numbers or Chinese',
+    regplaceholder_password: 'At least 4 characters',
+    regplaceholder_email: 'Email (optional)',
+    quotaLabel: 'Messages left',
+    quotaEmpty: 'Free quota used up',
+    buyTitle: 'Buy message quota',
+    buyOnce: 'One-time (unlimited)',
+    buySub: 'Monthly sub (unlimited)',
+    buyYear: 'Yearly sub (unlimited)',
+    buyOncePrice: '¥499 (lifetime)',
+    buySubPrice: '¥29.9/mo',
+    buyYearPrice: '¥299/yr',
+    dmPlaceholder: 'Enter username for DM',
+    dmBtn: 'DM',
+    selectPrivate: 'Group chat',
+    footerAbout: 'About ugochat',
+    footerContact: 'Questions? Contact',
+    buyBtn: 'Buy now',
+    buyNote: 'Simulated payment: click to credit',
+    buyClose: 'Close',
+    buyFail: 'Purchase failed',
+    buySuccess: 'success, remaining',
+    randomBtn: '🎲 Random Chat',
+    randomFinding: 'Finding a stranger...',
+    randomPaired: 'Paired with a stranger',
+    randomNext: 'Next',
+    randomExit: 'Exit',
+    randomPeerLeft: 'Your stranger left the chat',
+    randomWaiting: 'Waiting for a stranger — feel free to browse the group chat~',
+    navChat: 'Chat',
+    navRandom: 'Random',
+    navAbout: 'About',
+    navPricing: 'Plans',
+    navLang: '中/En'
+  },
+  t(key) {
+    return (this[this.current] || this.zh)[key] || key;
+  }
+};
+
+function switchLang(lang) {
+  i18n.current = lang;
+  localStorage.setItem('tinychat_lang', lang);
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+  applyI18n();
+  refreshChatI18n();
+}
+
+// Re-render dynamic (runtime-built) chat UI on language switch
+function refreshChatI18n() {
+  const sel = document.getElementById('privateTo');
+  if (sel) {
+    const cur = sel.value;
+    renderMembers(lastMembers);
+    sel.value = cur;
+  }
+  const hint = document.getElementById('privateMode');
+  if (hint) {
+    if (privateTo) { hint.style.display = 'inline'; hint.textContent = '❓ ' + i18n.t('privateHint').replace('{u}', privateTo); }
+    else { hint.style.display = 'none'; }
+  }
+  const banner = document.getElementById('randomBanner');
+  const status = document.getElementById('randomStatus');
+  if (banner && status && banner.style.display !== 'none') {
+    status.textContent = randomPeer ? ('🎲 ' + i18n.t('randomPaired') + ': ' + randomPeer) : ('🎲 ' + i18n.t('randomFinding'));
+  }
+  const rn = document.querySelector('.random-next'); if (rn) rn.textContent = i18n.t('randomNext');
+  const rx = document.querySelector('.random-exit'); if (rx) rx.textContent = i18n.t('randomExit');
+  const rb = document.getElementById('btnRandom'); if (rb) rb.textContent = i18n.t('randomBtn');
+}
+
+function applyI18n() {
+  document.getElementById('loginTitle').textContent = i18n.t('loginTitle');
+  document.getElementById('loginSub').textContent = i18n.t('loginSub');
+  document.getElementById('labelUsername').textContent = i18n.t('labelUsername');
+  document.getElementById('labelPassword').textContent = i18n.t('labelPassword');
+  document.getElementById('btnLogin').textContent = i18n.t('loginBtn');
+  document.getElementById('btnShowRegister').textContent = i18n.t('showRegisterBtn');
+  document.getElementById('regTitle').textContent = i18n.t('regTitle');
+  document.getElementById('regLabelUsername').textContent = i18n.t('regLabelUsername');
+  document.getElementById('regLabelPassword').textContent = i18n.t('regLabelPassword');
+  document.getElementById('btnRegister').textContent = i18n.t('regBtn');
+  document.getElementById('btnBack').textContent = i18n.t('backBtn');
+  document.getElementById('btnSend').textContent = i18n.t('sendBtn');
+  const lo = document.getElementById('navLogout'); if (lo) lo.textContent = i18n.t('logoutBtn');
+  document.getElementById('loginUsername').placeholder = i18n.t('logplaceholder_username');
+  document.getElementById('loginPassword').placeholder = i18n.t('logplaceholder_password');
+  document.getElementById('regUsername').placeholder = i18n.t('regplaceholder_username');
+  document.getElementById('regPassword').placeholder = i18n.t('regplaceholder_password');
+  document.getElementById('regEmail').placeholder = i18n.t('regplaceholder_email');
+  document.getElementById('msgInput').placeholder = i18n.t('placeholder');
+  document.getElementById('buyModalTitle').textContent = i18n.t('buyTitle');
+  document.getElementById('buyModalNote').textContent = i18n.t('buyNote');
+  document.getElementById('buyOnce').textContent = i18n.t('buyOnce');
+  document.getElementById('buySub').textContent = i18n.t('buySub');
+  document.getElementById('buyYear').textContent = i18n.t('buyYear');
+  const bp = document.getElementById('buyOncePrice'); if (bp) bp.textContent = i18n.t('buyOncePrice');
+  const sp = document.getElementById('buySubPrice'); if (sp) sp.textContent = i18n.t('buySubPrice');
+  const yp = document.getElementById('buyYearPrice'); if (yp) yp.textContent = i18n.t('buyYearPrice');
+  document.querySelectorAll('.buy-close').forEach(b => b.textContent = i18n.t('buyClose'));
+  const di = document.getElementById('dmInput'); if (di) di.placeholder = i18n.t('dmPlaceholder');
+  const rb = document.getElementById('btnRandom'); if (rb) rb.textContent = i18n.t('randomBtn');
+  document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if (k) el.textContent = i18n.t(k); });
+  const optPub = document.getElementById('optPublic'); if (optPub) optPub.textContent = i18n.t('selectPrivate');
+  const dmB = document.getElementById('dmBtn'); if (dmB) dmB.textContent = i18n.t('dmBtn');
+  const dmi = document.getElementById('dmInput'); if (dmi) dmi.placeholder = i18n.t('dmPlaceholder');
+  const rn = document.querySelector('.random-next'); if (rn) rn.textContent = i18n.t('randomNext');
+  const rx = document.querySelector('.random-exit'); if (rx) rx.textContent = i18n.t('randomExit');
+}
+
+let token = null;
+let username = null;
+let quota = -1;
+let ws = null;
+let reconnectTimer = null;
+let reconnectAttempts = 0;
+let manualClose = false;
+
+function updateConnDot(state) {
+  const dot = document.getElementById('connDot');
+  if (!dot) return;
+  if (state === 'green') { dot.style.background = '#1e8e3e'; dot.title = i18n.t('connected'); }
+  else if (state === 'yellow') { dot.style.background = '#f9ab00'; dot.title = i18n.t('reconnecting'); }
+  else { dot.style.background = '#d93025'; dot.title = i18n.t('disconnected'); }
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  setActiveNav('navChat');
+}
+
+function showLogin() {
+  showPage('pageLogin');
+  document.getElementById('loginError').textContent = '';
+}
+
+function showRegister() {
+  showPage('pageRegister');
+  document.getElementById('regError').textContent = '';
+}
+
+async function api(path, body) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const res = await fetch('/api' + path, { method: 'POST', headers, body: JSON.stringify(body) });
+  return await res.json();
+}
+
+async function doRegister() {
+  const u = document.getElementById('regUsername').value.trim();
+  const p = document.getElementById('regPassword').value;
+  const e = document.getElementById('regEmail').value.trim();
+  if (!u || !p) { document.getElementById('regError').textContent = i18n.t('registerError'); return; }
+  const r = await api('/register', { username: u, password: p, email: e });
+  if (r.ok) {
+    document.getElementById('loginUsername').value = u;
+    document.getElementById('loginPassword').value = p;
+    showLogin();
+  } else {
+    document.getElementById('regError').textContent = r.error || i18n.t('registerError');
+  }
+}
+
+async function doLogin() {
+  const u = document.getElementById('loginUsername').value.trim();
+  const p = document.getElementById('loginPassword').value;
+  if (!u || !p) { document.getElementById('loginError').textContent = i18n.t('loginError'); return; }
+  const r = await api('/login', { username: u, password: p });
+  if (r.ok) {
+    token = r.token;
+    username = r.username;
+    quota = (typeof r.quota === 'number') ? r.quota : -1;
+    startChat();
+  } else {
+    document.getElementById('loginError').textContent = r.error || i18n.t('loginError');
+  }
+}
+
+function doLogout() {
+  if (ws) { ws.close(); ws = null; }
+  manualClose = true;
+  token = null; username = null;
+  const lo = document.getElementById('navLogout'); if (lo) lo.style.display = 'none';
+  showPage('pageLogin');
+  updateConnDot('red');
+}
+
+function connectWS() {
+  manualClose = false;
+  if (ws) { try { ws.close(); } catch(e) {} ws = null; }
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const wsUrl = proto + '//' + location.host + '/chat?token=' + encodeURIComponent(token);
+  ws = new WebSocket(wsUrl);
+  ws.onopen = () => {
+    reconnectAttempts = 0;
+    updateConnDot('green');
+    addMessage({ type: 'system', text: '✓ ' + i18n.t('connected') });
+    if (localStorage.getItem('ugochat_auto_random') === '1') {
+      localStorage.removeItem('ugochat_auto_random');
+      setTimeout(() => startRandom(), 400);
+    }
+  };
+  ws.onmessage = (e) => {
+    try { handleWSMessage(JSON.parse(e.data)); } catch(err) {}
+  };
+  ws.onclose = () => {
+    ws = null;
+    if (manualClose) return;
+    addMessage({ type: 'system', text: '⚠ ' + i18n.t('disconnected') + ' … ' + i18n.t('reconnecting') });
+    updateConnDot('yellow');
+    scheduleReconnect();
+  };
+  ws.onerror = () => {};
+}
+
+function scheduleReconnect() {
+  if (reconnectTimer) clearTimeout(reconnectTimer);
+  if (!token) { showRelogin(); return; }
+  reconnectAttempts++;
+  // 快速重连：前 3 次 1.5s，之后退避到最长 15s
+  const delay = reconnectAttempts <= 3 ? 1500 : Math.min(1500 * Math.pow(2, reconnectAttempts - 2), 15000);
+  reconnectTimer = setTimeout(() => {
+    if (token && !manualClose) connectWS();
+  }, delay);
+}
+
+function showRelogin() {
+  addMessage({ type: 'system', text: '⛔ ' + i18n.t('sessionExpired') });
+}
+
+function handleWSMessage(msg) {
+  switch (msg.type) {
+    case 'init':
+      renderMembers(msg.onlineUsers.map(u => (typeof u === 'object' && u) ? u.username : u));
+      const sel = document.getElementById('privateTo'); if (sel) sel.value = privateTo || '';
+      document.getElementById('onlineCount').textContent = msg.onlineUsers.length;
+      msg.messages.forEach(m => addMessage(m));
+      document.getElementById('msgInput').disabled = false;
+      document.getElementById('btnSend').disabled = false;
+      addMessage({ type: 'system', text: '👋 ' + i18n.t('welcome') });
+      break;
+    case 'message': addMessage(msg); break;
+    case 'online':
+      { const un = (typeof msg.username === 'object' && msg.username) ? msg.username.username : msg.username; if (un !== username) addOnlineUser(un); }
+      document.getElementById('onlineCount').textContent = msg.onlineUsers.length;
+      break;
+    case 'offline':
+      { const un = (typeof msg.username === 'object' && msg.username) ? msg.username.username : msg.username; removeMember(un); }
+      document.getElementById('onlineCount').textContent = msg.onlineUsers.length;
+      break;
+    case 'private': addPrivateMessage(msg); break;
+    case 'random_paired': handleRandomPaired(msg.peer); break;
+    case 'random_waiting':
+      document.getElementById('randomStatus').textContent = '🎲 ' + i18n.t('randomWaiting');
+      break;
+    case 'random_peer_left':
+      addMessage({ type: 'system', text: '🎲 ' + i18n.t('randomPeerLeft') });
+      exitDirect();
+      break;
+    case 'random_msg': addRandomMessage(msg); break;
+    case 'quota':
+      if (typeof msg.quota === 'number') { quota = msg.quota; updateQuotaBadge(); }
+      break;
+    case 'system':
+      if (msg.code === 'QUOTA_EXHAUSTED') { addMessage({ type: 'system', text: msg.text }); openBuy(); }
+      else if (msg.text) addMessage({ type: 'system', text: msg.text });
+      break;
+  }
+}
+
+function sendMsg() {
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text || !ws) return;
+  if (quota === 0) { openBuy(); return; }
+  // quota === -1 (无限) 或 >0 均可发送
+  input.value = '';
+  const to = privateTo;
+  if (randomPeer) {
+    // Random 1:1 mode: send to stranger only
+    ws.send(JSON.stringify({ type: 'random_msg', text }));
+    if (quota > 0) { quota -= 1; updateQuotaBadge(); }
+    addRandomMessage({ direction: 'outgoing', text, timestamp: Date.now() });
+    input.focus();
+    return;
+  }
+  ws.send(JSON.stringify(to ? { type: 'private', to, text } : { type: 'message', text }));
+  if (quota > 0) { quota -= 1; updateQuotaBadge(); }
+  // Optimistic: show own message immediately
+  if (to) {
+    addPrivateMessage({ direction: 'outgoing', from: username, to, text, timestamp: Date.now() });
+  } else {
+    addMessage({ type: 'message', username, text, timestamp: Date.now() });
+  }
+  input.focus();
+}
+
+let privateTo = '';
+function onSelectChange() {
+  const sel = document.getElementById('privateTo');
+  privateTo = sel.value || '';
+  const dminp = document.getElementById('dmInput'); if (dminp) dminp.value = '';
+  const hint = document.getElementById('privateMode');
+  hint.style.display = privateTo ? 'inline' : 'none';
+  if (privateTo) hint.textContent = '? ' + i18n.t('privateHint').replace('{u}', privateTo);
+}
+function applyDmInput() {
+  const inp = document.getElementById('dmInput');
+  const v = inp.value.trim();
+  if (!v) { privateTo = ''; onSelectChangeReset(); return; }
+  privateTo = v;
+  const sel = document.getElementById('privateTo'); if (sel) sel.value = '';
+  const hint = document.getElementById('privateMode');
+  hint.style.display = 'inline';
+  hint.textContent = '? ' + i18n.t('privateHint').replace('{u}', v);
+}
+function onSelectChangeReset() {
+  const sel = document.getElementById('privateTo'); if (sel) sel.value = '';
+  const hint = document.getElementById('privateMode');
+  hint.style.display = 'none';
+}
+function addOnlineUser(user) {
+  const sel = document.getElementById('privateTo');
+  if (!user || sel.querySelector('option[value="' + user + '"]')) return;
+  const opt = document.createElement('option');
+  opt.value = user;
+  opt.textContent = '✉ ' + user;
+  sel.appendChild(opt);
+}
+function removeMember(user) {
+  const opt = document.querySelector('#privateTo option[value="' + user + '"]');
+  if (opt) opt.remove();
+}
+let lastMembers = [];
+function renderMembers(users) {
+  lastMembers = users || [];
+  const sel = document.getElementById('privateTo');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">' + i18n.t('selectPrivate') + '</option>';
+  users.filter(u => u && u !== username).forEach(u => addOnlineUser(u));
+}
+
+let randomPeer = '';
+function navChat() {
+  exitDirect();
+  if (token) { showPage('pageChat'); } else { showLogin(); }
+}
+function navRandom() {
+  if (!token) { showLogin(); return; }
+  if (ws && ws.readyState === 1) startRandom();
+  else { localStorage.setItem('ugochat_auto_random', '1'); connectWS(); }
+}
+function setActiveNav(id) {
+  ['navChat','navRandom','navAbout','navPricing'].forEach(n => {
+    const e = document.getElementById(n); if (e) e.classList.remove('active');
+  });
+  const a = document.getElementById(id); if (a) a.classList.add('active');
+}
+function startRandom() {
+  if (!ws) return;
+  exitDirect();
+  randomPeer = '';
+  document.getElementById('randomBanner').style.display = 'flex';
+  document.getElementById('randomStatus').textContent = i18n.t('randomFinding');
+  ws.send(JSON.stringify({ type: 'random' }));
+  addMessage({ type: 'system', text: '🎲 ' + i18n.t('randomFinding') });
+}
+function nextRandom() {
+  if (!ws) return;
+  randomPeer = '';
+  document.getElementById('randomStatus').textContent = i18n.t('randomFinding');
+  ws.send(JSON.stringify({ type: 'random_next' }));
+}
+function exitRandom() {
+  if (ws) ws.send(JSON.stringify({ type: 'random_leave' }));
+  exitDirect();
+}
+function exitDirect() {
+  randomPeer = '';
+  document.getElementById('randomBanner').style.display = 'none';
+  privateTo = '';
+  onSelectChangeReset();
+}
+function handleRandomPaired(peer) {
+  randomPeer = peer;
+  document.getElementById('randomBanner').style.display = 'flex';
+  document.getElementById('randomStatus').textContent = '🎲 ' + i18n.t('randomPaired') + ': ' + peer;
+  addMessage({ type: 'system', text: '🎲 ' + i18n.t('randomPaired') + ': ' + peer });
+}
+function addRandomMessage(msg) {
+  const div = document.getElementById('messages');
+  const isOutgoing = msg.direction === 'outgoing';
+  const el = document.createElement('div');
+  el.className = 'msg private' + (isOutgoing ? ' me' : '');
+  const label = isOutgoing ? ('➡️ ' + i18n.t('randomPaired')) : ('🎲 Stranger');
+  el.innerHTML = '<div class="sender">' + label + '</div>' + esc(msg.text) +
+    '<div class="time">' + timeAgo(msg.timestamp) + '</div>';
+  div.appendChild(el);
+  div.scrollTop = div.scrollHeight;
+}
+
+function addMessage(msg) {
+  const div = document.getElementById('messages');
+  const el = document.createElement('div');
+  if (msg.type === 'system') {
+    el.className = 'msg system';
+    el.textContent = msg.text;
+  } else {
+    el.className = 'msg' + (msg.username === username ? ' me' : '');
+    const geo = msg.geo ? ' <span class="geo">(' + esc(msg.geo) + ')</span>' : '';
+    el.innerHTML = '<div class="sender">' + esc(msg.username) + geo + '</div>' + esc(msg.text) +
+      '<div class="time">' + timeAgo(msg.timestamp) + '</div>';
+  }
+  div.appendChild(el);
+  div.scrollTop = div.scrollHeight;
+}
+
+function addPrivateMessage(msg) {
+  const div = document.getElementById('messages');
+  const el = document.createElement('div');
+  const isOutgoing = msg.direction === 'outgoing';
+  el.className = 'msg private' + (isOutgoing ? ' me' : '');
+  const label = '🔒 ' + esc(msg.from) + ' → ' + esc(msg.to);
+  const geo = msg.geo ? ' <span class="geo">(' + esc(msg.geo) + ')</span>' : '';
+  el.innerHTML = '<div class="sender">' + label + geo + '</div>' + esc(msg.text) +
+    '<div class="time">' + timeAgo(msg.timestamp) + '</div>';
+  div.appendChild(el);
+  div.scrollTop = div.scrollHeight;
+}
+
+function timeAgo(ts) {
+  const d = new Date(ts);
+  return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+(function init() {
+  const savedLang = localStorage.getItem('tinychat_lang');
+  if (savedLang) i18n.current = savedLang;
+  applyI18n();
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === i18n.current);
+  });
+  const savedToken = localStorage.getItem('tinychat_token');
+  const savedUser = localStorage.getItem('tinychat_username');
+  if (savedToken && savedUser) {
+    token = savedToken;
+    username = savedUser;
+    startChat();
+  }
+})();
+
+function startChat() {
+  localStorage.setItem('tinychat_token', token);
+  localStorage.setItem('tinychat_username', username);
+  const lo = document.getElementById('navLogout'); if (lo) lo.style.display = 'inline';
+  showPage('pageChat');
+  document.getElementById('msgInput').disabled = true;
+  document.getElementById('btnSend').disabled = true;
+  document.getElementById('messages').innerHTML = '';
+  renderMembers([]);
+  onSelectChangeReset();
+  updateQuotaBadge();
+  connectWS();
+  document.getElementById('loginError').textContent = '';
+  document.getElementById('regError').textContent = '';
+}
+
+function updateQuotaBadge() {
+  const badge = document.getElementById('quotaBadge');
+  const num = document.getElementById('quotaNum');
+  if (!badge || !num) return;
+  if (quota === -1) { num.textContent = '∞'; badge.className = 'quota-badge'; badge.title = '无限条'; return; }
+  if (quota < 0) { num.textContent = '--'; badge.className = 'quota-badge'; return; }
+  num.textContent = quota;
+  if (quota <= 0) badge.className = 'quota-badge empty';
+  else if (quota <= 10) badge.className = 'quota-badge low';
+  else badge.className = 'quota-badge';
+}
+
+function openBuy() {
+  const m = document.getElementById('buyModal');
+  if (m) m.style.display = 'flex';
+  const r = document.getElementById('buyResult');
+  if (r) r.textContent = '';
+}
+function closeBuy() {
+  const m = document.getElementById('buyModal');
+  if (m) m.style.display = 'none';
+}
+async function doBuy(pkg) {
+  const r = await api('/buy', { token, pkg });
+  const res = document.getElementById('buyResult');
+  if (r.ok) {
+    quota = r.quota;
+    updateQuotaBadge();
+    if (res) res.textContent = '✓ ' + (r.label || '') + ' 已开通，' + (quota === -1 ? '无限条' : ('剩余 ' + quota + ' 条'));
+    setTimeout(closeBuy, 1200);
+  } else if (res) {
+    res.textContent = '✗ ' + (r.error || i18n.t('buyFail'));
+  }
+}
+window.addEventListener('load', () => {
+  const badge = document.getElementById('quotaBadge');
+  if (badge) badge.onclick = openBuy;
+});
+</script>
+</body>
+</html>

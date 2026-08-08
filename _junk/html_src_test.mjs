@@ -934,7 +934,7 @@ p{color:#555;line-height:1.7;font-size:15px;margin-bottom:12px}
 <div class="wrap" id="content"></div>
 <div class="footer">ugochat &copy; 2026 | <a href="mailto:ugo2000@126.com">ugo2000@126.com</a></div>
 <script>
-const ZH=String.fromCharCode(96)+\`<h1>About ugochat</h1>
+const ZH=String.fromCharCode(96)+`<h1>About ugochat</h1>
 <h2>What is ugochat?</h2>
 <p>ugochat is a free online chat platform for meeting strangers worldwide. Chat anonymously with random people for fun, venting, or just passing time.</p>
 <h2>Why use ugochat?</h2>
@@ -957,8 +957,8 @@ const ZH=String.fromCharCode(96)+\`<h1>About ugochat</h1>
 <p>Our random chat feature matches you with a stranger. Say hi, chat about anything, and if you want to meet someone new, just tap "Next" to find another stranger. No awkwardness, no connections, just pure conversation.</p>
 <h2>Contact</h2>
 <p>Questions or feedback? Email us at <a href="mailto:ugo2000@126.com">ugo2000@126.com</a></p>
-<div class="cta"><a href="/">Start Chatting Now</a></div>\`;
-const EN=String.fromCharCode(96)+\`<h1>About ugochat</h1>
+<div class="cta"><a href="/">Start Chatting Now</a></div>`;
+const EN=String.fromCharCode(96)+`<h1>About ugochat</h1>
 <h2>What is ugochat?</h2>
 <p>ugochat is a free online chat platform for meeting strangers worldwide. Chat anonymously with random people for fun, venting, or just passing time.</p>
 <h2>Why use ugochat?</h2>
@@ -981,7 +981,7 @@ const EN=String.fromCharCode(96)+\`<h1>About ugochat</h1>
 <p>Our random chat feature matches you with a stranger. Say hi, chat about anything, and if you want to meet someone new, just tap "Next" to find another stranger. No awkwardness, no connections, just pure conversation.</p>
 <h2>Contact</h2>
 <p>Questions or feedback? Email us at <a href="mailto:ugo2000@126.com">ugo2000@126.com</a></p>
-<div class="cta"><a href="/">Start Chatting Now</a></div>\`;
+<div class="cta"><a href="/">Start Chatting Now</a></div>`;
 function usgLang(){const cur=document.getElementById('content').innerHTML===ZH?'zh':'en';const next=cur==='zh'?'en':'zh';document.getElementById('content').innerHTML=next==='zh'?ZH:EN;document.getElementById('lngBtn').textContent=next==='zh'?'\u4E2D':'EN';localStorage.setItem('tinychat_lang',next);}
 (function(){const l=localStorage.getItem('tinychat_lang')||'en';document.getElementById('content').innerHTML=l==='zh'?ZH:EN;document.getElementById('lngBtn').textContent=l==='zh'?'\u4E2D':'EN';})();
 </scr${""}ipt>
@@ -1036,7 +1036,7 @@ h1{font-size:26px;color:#1a1a1a;margin-bottom:24px;text-align:center}
 <div class="wrap" id="content"></div>
 <div class="footer">ugochat &copy; 2026</div>
 <script>
-const ZH=String.fromCharCode(96)+\`<h1>Pricing</h1>
+const ZH=String.fromCharCode(96)+`<h1>Pricing</h1>
 <div class="cards">
 <div class="card">
 <div class="tag">FREE</div>
@@ -1070,8 +1070,8 @@ const ZH=String.fromCharCode(96)+\`<h1>Pricing</h1>
 <div class="faq-item"><h4>What happens when free quota runs out?</h4><p>You can purchase a plan to unlock unlimited messaging. Your free 100 messages never expire.</p></div>
 <div class="faq-item"><h4>How does payment work?</h4><p>We use WeChat Pay / Alipay. Admin reviews your payment and activates your account manually (usually within minutes).</p></div>
 <div class="faq-item"><h4>Can I cancel monthly subscription?</h4><p>Yes, just stop purchasing next month. No auto-renewal.</p></div>
-</div>\`;
-const EN=String.fromCharCode(96)+\`<h1>Pricing</h1>
+</div>`;
+const EN=String.fromCharCode(96)+`<h1>Pricing</h1>
 <div class="cards">
 <div class="card">
 <div class="tag">FREE</div>
@@ -1105,7 +1105,7 @@ const EN=String.fromCharCode(96)+\`<h1>Pricing</h1>
 <div class="faq-item"><h4>What happens when free quota runs out?</h4><p>You can purchase a plan to unlock unlimited messaging. Your free 100 messages never expire.</p></div>
 <div class="faq-item"><h4>How does payment work?</h4><p>We use WeChat Pay / Alipay. Admin reviews your payment and activates your account manually (usually within minutes).</p></div>
 <div class="faq-item"><h4>Can I cancel monthly subscription?</h4><p>Yes, just stop purchasing next month. No auto-renewal.</p></div>
-</div>\`;
+</div>`;
 function usgLang(){const cur=document.getElementById('content').innerHTML===ZH?'zh':'en';const next=cur==='zh'?'en':'zh';document.getElementById('content').innerHTML=next==='zh'?ZH:EN;document.getElementById('lngBtn').textContent=next==='zh'?'\u4E2D':'EN';localStorage.setItem('tinychat_lang',next);}
 (function(){const l=localStorage.getItem('tinychat_lang')||'en';document.getElementById('content').innerHTML=l==='zh'?ZH:EN;document.getElementById('lngBtn').textContent=l==='zh'?'\u4E2D':'EN';})();
 </scr${""}ipt>

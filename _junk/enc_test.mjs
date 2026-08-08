@@ -1,0 +1,1 @@
+console.log(encodeURIComponent('fuckjapan888*'))

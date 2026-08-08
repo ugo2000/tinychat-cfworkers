@@ -1,5 +1,5 @@
 name = "tinychat"
-main = "src/index.js"
+main = "dist/index.js"
 compatibility_date = "2026-07-21"
 
 [[durable_objects.bindings]]

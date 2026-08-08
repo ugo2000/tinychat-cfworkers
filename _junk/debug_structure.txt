@@ -1,0 +1,158 @@
+Lines: 874
+L15: export default {
+L174: export class ChatRoom {
+
+export default at char: 766
+Context: "=================== Worker  =====================\nexport default {\n  async fetch(request, env) {\n    const url = new URL(request.url);\n    const path "
+
+Line depth analysis:
+L15 (d=0): export default {
+L23 (d=4): });
+L24 (d=3): }
+L29 (d=3): }
+L36 (d=3): }
+L43 (d=3): }
+L57 (d=4): });
+L59 (d=3): }
+L63 (d=3): }
+L68 (d=3): }
+L81 (d=3): }
+L88 (d=3): }
+L94 (d=3): }
+L100 (d=3): }
+L109 (d=5): }
+L110 (d=4): });
+L111 (d=3): }
+L120 (d=5): }
+L121 (d=4): });
+L122 (d=3): }
+L131 (d=5): }
+L132 (d=4): });
+L133 (d=3): }
+L142 (d=5): }
+L143 (d=4): });
+L144 (d=3): }
+L151 (d=4): }
+L156 (d=3): }
+L165 (d=5): }
+L166 (d=4): });
+L167 (d=3): }
+L170 (d=2): }
+L171 (d=1): };
+L174 (d=0): export class ChatRoom {
+L180 (d=2): }
+L189 (d=3): }
+L212 (d=4): }
+L213 (d=3): } catch (e) {
+L215 (d=3): }
+L216 (d=2): }
+L223 (d=2): }
+L229 (d=2): }
+L236 (d=4): }
+L237 (d=3): }
+L238 (d=2): }
+L266 (d=3): }
+L273 (d=2): }
+L286 (d=3): } else if (msg.type === 'private') {
+L288 (d=3): } else if (msg.type === 'random') {
+L290 (d=3): } else if (msg.type === 'random_next') {
+L292 (d=3): } else if (msg.type === 'random_leave') {
+L294 (d=3): } else if (msg.type === 'random_msg') {
+L296 (d=3): }
+L297 (d=2): }
+L314 (d=2): }
+L325 (d=5): }
+L340 (d=5): }
+L345 (d=5): }
+L357 (d=3): }
+L358 (d=2): }
+L360 (d=1): }
+L370 (d=1): }
+L372 (d=0): }
+L385 (d=1): } else {
+L388 (d=1): }
+L389 (d=0): }
+L401 (d=1): } else {
+L404 (d=1): }
+L405 (d=0): }
+L410 (d=0): }
+L420 (d=1): }
+L426 (d=0): }
+L433 (d=1): }
+L435 (d=0): }
+L442 (d=1): }
+L443 (d=0): }
+L449 (d=1): }
+L450 (d=0): }
+L460 (d=1): }
+L461 (d=0): }
+L469 (d=0): }
+L480 (d=1): }
+L483 (d=1): }
+L488 (d=1): }
+L494 (d=0): }
+L506 (d=1): }
+L511 (d=0): }
+L517 (d=0): }
+L531 (d=2): };
+L532 (d=1): }).sort((a, b) => b.createdAt - a.createdAt);
+L547 (d=1): };
+L550 (d=0): }
+L556 (d=0): }
+L580 (d=2): }
+L581 (d=1): }
+L589 (d=0): }
+L598 (d=0): }
+L603 (d=0): }
+L610 (d=0): }
+L633 (d=3): });
+L639 (d=2): } catch (e) {
+L641 (d=3): }
+L642 (d=3): }
+L654 (d=3): }
+L655 (d=3): }
+L662 (d=3): });
+L663 (d=2): }
+L668 (d=2): }
+L683 (d=2): }
+L692 (d=2): }
+L705 (d=2): }
+L711 (d=2): }
+L718 (d=2): }
+L730 (d=2): }
+L738 (d=2): },
+L740 (d=2): });
+L741 (d=2): }
+L753 (d=2): }
+L767 (d=2): }
+L768 (d=2): }
+L771 (d=2): async function handleWechatNotify(request, env) {
+L780 (d=2): }
+L781 (d=2): } catch (e) { /*  */ }
+L794 (d=2): }
+L795 (d=2): }
+L796 (d=2): } catch (e) { return new Response('decrypt failed', { status
+L798 (d=1): }
+L802 (d=0): async function hashPassword(password) {
+L806 (d=1): }
+L808 (d=0): async function verifyPassword(password, hash) {
+L810 (d=1): }
+L812 (d=0): async function createToken(payload) {
+L820 (d=1): }
+L822 (d=0): async function verifyToken(token) {
+L835 (d=2): } catch { return null; }
+L836 (d=1): }
+L838 (d=0): function filterBadWords(text) {
+L843 (d=2): }
+L845 (d=1): }
+L847 (d=0): function buf2hex(buf) {
+L852 (d=2): }
+L854 (d=1): }
+L856 (d=0): function buf2base64(buf) {
+L859 (d=1): }
+L861 (d=0): function base64tobuf(b64) {
+L866 (d=1): }
+L868 (d=0): function json(data, status = 200) {
+L871 (d=2): });
+L872 (d=1): }
+L874 (d=0): }

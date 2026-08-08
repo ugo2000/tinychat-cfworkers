@@ -1,0 +1,10 @@
+import { readFileSync } from 'fs';
+const s = readFileSync('src/index.js', 'utf8');
+console.log('index.js size:', s.length);
+console.log('handlePayApprove:', s.includes('handlePayApprove'));
+console.log('handlePayConfirm:', s.includes('handlePayConfirm'));
+console.log('handlePayPending:', s.includes('handlePayPending'));
+console.log('ADMIN_PASSWORD env:', s.includes('ADMIN_PASSWORD'));
+console.log('wechat.js import:', s.includes('wechat.js'));
+console.log('APP_VERSION:', s.includes("APP_VERSION"));
+console.log('First line:', s.split('\n')[0]);
