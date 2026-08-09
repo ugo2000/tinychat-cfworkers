@@ -6,7 +6,7 @@ const BAD_WORDS = ['fuck','shit','ass','bitch','damn','crap','dick','piss',
   'slut','whore','nigger','fag','asshole','bastard','cock','cunt',
   'fuckyou','fck','wtf','stfu','cao','sb'];
 
-const APP_VERSION = '20260807-0730';
+const APP_VERSION = '20260810-0715';
 
 const SECRET = new TextEncoder().encode('tinychat-hmac-secret-2026');
 
@@ -334,7 +334,9 @@ export class ChatRoom {
     if (messages.length > 500) messages = messages.slice(-500);
     await this.state.storage.put('messages', messages);
 
-    await this.broadcastExcept(senderWs, msg);
+    // Broadcast to ALL sockets (including sender) so every device/tab of the same
+    // account stays in sync; the frontend renders own messages by comparing username.
+    await this.broadcast(msg);
     if (quota > 0) { try { await senderWs.send(JSON.stringify({ type: 'quota', quota: quota - 1 })); } catch(e) {} }
     await this._inc('messagesTotal');
   }
@@ -363,10 +365,12 @@ export class ChatRoom {
     // (to)(from)
     const msg = { type: 'private', from, to, text, timestamp: Date.now() };
     const strIn = JSON.stringify({ ...msg, direction: 'incoming' });
+    const strOut = JSON.stringify({ ...msg, direction: 'outgoing' });
     for (const ws of this.state.getWebSockets()) {
       const a = ws.deserializeAttachment();
       if (!a) continue;
       if (a.username === to) { try { await ws.send(strIn); } catch(e) {} }
+      else if (a.username === from) { try { await ws.send(strOut); } catch(e) {} }
     }
     try { await this.pushQuota(from); } catch(e) {}
   }
@@ -420,8 +424,8 @@ export class ChatRoom {
     }
     if (quota > 0) await this.setQuota(username, quota - 1);
     const msg = { type: 'random_msg', from: username, text: String(text), timestamp: Date.now() };
-    const str = JSON.stringify({ ...msg, direction: 'incoming' });
-    await this._sendToUser(peer, JSON.parse(str));
+    await this._sendToUser(peer, { ...msg, direction: 'incoming' });
+    await this._sendToUser(username, { ...msg, direction: 'outgoing' });
     try { await this.pushQuota(username); } catch(e) {}
   }
 
