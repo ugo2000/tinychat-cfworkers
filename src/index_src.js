@@ -6,7 +6,7 @@ const BAD_WORDS = ['fuck','shit','ass','bitch','damn','crap','dick','piss',
   'slut','whore','nigger','fag','asshole','bastard','cock','cunt',
   'fuckyou','fck','wtf','stfu','cao','sb'];
 
-const APP_VERSION = '20260810-0715';
+const APP_VERSION = '20260811-1240';
 
 const SECRET = new TextEncoder().encode('tinychat-hmac-secret-2026');
 
@@ -46,9 +46,11 @@ export default {
       const stub = env.CHAT.idFromName('global12');
       const city = (request.cf && request.cf.city) || '';
       const country = (request.cf && request.cf.country) || '';
+      // Build headers: preserve ALL original headers (especially Upgrade: websocket)
       const newHeaders = new Headers(request.headers);
       newHeaders.set('X-CF-City', city);
       newHeaders.set('X-CF-Country', country);
+      // Use original URL so DO gets correct pathname
       const newReq = new Request(request.url, {
         method: request.method,
         headers: newHeaders,
@@ -239,7 +241,9 @@ export class ChatRoom {
 
   // ---- WebSocket ----
   async handleWebSocket(request, url) {
-    const token = url.searchParams.get('token');
+    // Get token from Authorization header (primary) or query param (fallback)
+    const authHeader = request.headers.get('Authorization') || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : (url.searchParams.get('token') || '');
     const payload = await verifyToken(token);
     if (!payload) return new Response('Unauthorized', { status: 401 });
     const username = payload.username;
@@ -482,13 +486,21 @@ export class ChatRoom {
     if (username.length < 2 || password.length < 4) {
       return json({ ok: false, error: 'Username min 2 chars, password min 4 chars' }, 400);
     }
-    if (!/^[a-zA-Z0-9_\u4e00-\u9fa5]+$/.test(username)) {
-      return json({ ok: false, error: 'Username: letters, digits, underscore, Chinese only' }, 400);
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      return json({ ok: false, error: 'Username: letters, digits, underscore only' }, 400);
+    }
+    // email is optional; if provided, must be valid format
+    if (email && !/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
+      return json({ ok: false, error: 'Invalid email format' }, 400);
     }
 
     let users = await this.state.storage.get('users') || {};
     if (users[username]) {
       return json({ ok: false, error: 'Username taken' }, 409);
+    }
+    // uniqueness check by email (only if email provided)
+    if (email) {
+      for (const u of Object.values(users)) { if (u.email === email) return json({ ok: false, error: 'Email already registered' }, 409); }
     }
 
     users[username] = { hash: await hashPassword(password), createdAt: Date.now(), quota: 100, email };
@@ -500,14 +512,21 @@ export class ChatRoom {
   async handleLogin(request) {
     await this._inc('loginsTotal');
     const body = await request.json();
-    const username = (body.username || '').trim();
+    const loginKey = (body.username || '').trim(); // can be username or email
     const password = body.password || '';
 
     let users = await this.state.storage.get('users') || {};
-    const user = users[username];
-    if (!user || !(await verifyPassword(password, user.hash))) {
-      return json({ ok: false, error: 'Wrong username or password' }, 401);
+    let user = users[loginKey]; // try by username
+    if (!user) { // try by email
+      for (const [uname, u] of Object.entries(users)) { if (u.email === loginKey) { user = u; break; } }
     }
+    if (!user || !(await verifyPassword(password, user.hash))) {
+      return json({ ok: false, error: 'Wrong username/email or password' }, 401);
+    }
+
+    // resolve actual username (in case login was via email)
+    let username = loginKey;
+    if (!users[username]) { for (const [uname, u] of Object.entries(users)) { if (u.email === loginKey) { username = uname; break; } } }
 
     const token = await createToken({ username });
     const quota = (user.quota != null) ? user.quota : 100;

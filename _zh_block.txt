@@ -1,0 +1,23 @@
+const zh = {
+  loginTitle:'Login', regTitle:'Register', loginBtn:'Login', regBtn:'Register',
+  regLabelUser:'Username', regLabelPass:'Password', regLabelEmail:'Email (optional)',
+  regPlaceholderUser:'Username', regPlaceholderPass:'Password',
+  noAccount:'No account? Register', hasAccount:'Has account? Login',
+  aboutLink:'About ugochat',
+  selectPrivate:'Public Chat', dmPlaceholder:'Username', dmBtn:'DM',
+  privateHint:'DM: {u}', connected:'Connected', reconnecting:'Reconnecting...',
+  sessionExpired:'Session expired, please login again',
+  sendPlaceholder:'Type message...', sendBtn:'Send',
+  navChat:'Chat', navRandom:'Random', navAbout:'About', navPricing:'Pricing',
+  logoutBtn:'Logout',
+  quotaUsed:'Quota used: {n}', quotaExhausted:'Quota exhausted. Upgrade for unlimited.',
+  buyTitle:'Upgrade', pkgOnce:'Lifetime', lblOnce:'One-time, unlimited',
+  pkgYear:'Yearly', lblYear:'per year, unlimited',
+  pkgMonth:'Monthly', lblMonth:'per month, unlimited',
+  buyNote:'Real payment coming soon. Mock mode active.',
+  buySuccess:'Upgrade successful! Enjoy unlimited messaging.',
+  buyWaiting:'Waiting for admin approval...',
+  footerAbout:'About ugochat', footerContact:'Questions? Contact',
+  randomFinding:'Finding stranger...', randomPaired:'Paired! Say hi',
+  randomNext:'Next', randomExit:'Exit', randomLeft:'Stranger left'
+};

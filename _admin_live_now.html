@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ugochat Admin</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:20px}
+.wrap{width:100%;max-width:1100px}
+h1{text-align:center;margin-bottom:20px;color:#333}
+.login-box{background:#fff;padding:32px;border-radius:12px;max-width:400px;margin:60px auto;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.login-box input{padding:10px 14px;border:1px solid #ddd;border-radius:8px;width:100%;font-size:15px;margin-bottom:10px}
+.login-box button{background:#1a73e8;color:#fff;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;width:100%;font-size:15px}
+.panel{background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.panel h2{margin-bottom:16px;color:#333;font-size:16px;border-bottom:1px solid #eee;padding-bottom:10px}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px}
+.stat{background:#f8f9fa;padding:14px;border-radius:8px;text-align:center}
+.stat .n{font-size:24px;font-weight:700;color:#1a73e8}
+.stat .l{font-size:12px;color:#666;margin-top:4px}
+.toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.toolbar input{padding:7px 10px;border:1px solid #ddd;border-radius:6px;flex:1;min-width:150px}
+.toolbar select{padding:7px 10px;border:1px solid #ddd;border-radius:6px}
+.toolbar button{padding:7px 14px;background:#1a73e8;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px}
+.toolbar button.danger{background:#d32f2f}
+.toolbar button.secondary{background:#666}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid #eee}
+th{background:#f8f9fa;font-weight:600;color:#333;position:sticky;top:0}
+tr:hover{background:#fafafa}
+.err{color:#d32f2f;margin-top:8px;font-size:14px;min-height:20px}
+.qr-section{margin-top:20px;padding-top:20px;border-top:1px solid #eee}
+.qr-section h3{font-size:14px;color:#333;margin-bottom:10px}
+.qr-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.qr-item{flex:1;min-width:200px;background:#f8f9fa;padding:12px;border-radius:8px}
+.qr-item label{font-size:13px;color:#666;display:block;margin-bottom:6px}
+.qr-item img{max-width:150px;display:block;margin-bottom:6px}
+.qr-item button{padding:4px 10px;background:#666;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px}
+.pending-section{margin-top:20px}
+#pendingArea .pend-item{display:flex;align-items:center;gap:10px;padding:10px;background:#fff8e1;border-radius:8px;margin-bottom:8px}
+#pendingArea .pend-item span{flex:1;font-size:13px}
+#pendingArea .pend-item button{padding:5px 12px;background:#4caf50;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="login-box" id="loginBox">
+<h1>&#128272; Admin</h1>
+<input id="adminPwd" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+<button onclick="doLogin()">Enter</button>
+<div class="err" id="adminErr"></div>
+</div>
+<div class="panel hidden" id="panel">
+<h2>&#128202; ugochat Statistics</h2>
+<div class="stats">
+<div class="stat"><div class="n" id="stTotal">-</div><div class="l">Registered</div></div>
+<div class="stat"><div class="n" id="stOnline">-</div><div class="l">Online</div></div>
+<div class="stat"><div class="n" id="stEmail">-</div><div class="l">With Email</div></div>
+<div class="stat"><div class="n" id="stVisits">-</div><div class="l">Total Visits</div></div>
+<div class="stat"><div class="n" id="stToday">-</div><div class="l">Today</div></div>
+<div class="stat"><div class="n" id="stMsg">-</div><div class="l">Messages</div></div>
+<div class="stat"><div class="n" id="stReg">-</div><div class="l">Registers</div></div>
+<div class="stat"><div class="n" id="stLogin">-</div><div class="l">Logins</div></div>
+<div class="stat"><div class="n" id="stIP">-</div><div class="l">Unique IPs</div></div>
+</div>
+<div class="qr-section">
+<h3>&#128179; Payment QR Codes</h3>
+<div class="qr-row" id="qrRow">
+<div class="qr-item"><label>WeChat Pay</label><img id="qrWechat" style="display:none"><span id="qrWechatStatus"></span><br><input type="file" id="qrFileWechat" accept="image/*" style="display:none"><button onclick="document.getElementById('qrFileWechat').click();document.getElementById('qrFileWechat').onchange=function(){uploadQR('wechat',this.files[0])}">Upload</button></div>
+<div class="qr-item"><label>Alipay</label><img id="qrAlipay" style="display:none"><span id="qrAlipayStatus"></span><br><input type="file" id="qrFileAlipay" accept="image/*" style="display:none"><button onclick="document.getElementById('qrFileAlipay').click();document.getElementById('qrFileAlipay').onchange=function(){uploadQR('alipay',this.files[0])}">Upload</button></div>
+</div>
+</div>
+<div class="pending-section">
+<h3>&#9203; Pending Payments</h3>
+<div id="pendingArea"></div>
+</div>
+<h2>&#128101; Users</h2>
+<div class="toolbar">
+<input id="searchInput" placeholder="Search username..." oninput="render()">
+<select id="sortSel" onchange="render()">
+<option value="createdAt_desc">Newest First</option>
+<option value="createdAt_asc">Oldest First</option>
+<option value="quota_asc">Quota Low-High</option>
+<option value="username_asc">Name A-Z</option>
+<option value="online_desc">Online First</option>
+</select>
+<button onclick="exportCSV()">Export CSV</button>
+<button class="secondary" onclick="logout()">Logout</button>
+</div>
+<table>
+<thead><tr><th>Username</th><th>Email</th><th>Registered</th><th>Quota</th><th>Online</th><th></th></tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+<div id="visitorLog" style="margin-top:20px">
+<h3>&#128205; Visitor Log</h3>
+<div id="visitorTable" style="max-height:200px;overflow-y:auto"></div>
+<button class="danger" onclick="clearVisitors()" style="margin-top:8px">Clear Visitor Log</button>
+</div>
+</div>
+</div>
+<script>
+let DATA, PWD='';
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+async function doLogin(){
+  PWD=document.getElementById('adminPwd').value;
+  document.getElementById('adminErr').textContent='';
+  try {
+    const r=await fetch('/admin/users?pwd='+encodeURIComponent(PWD));
+    if(!r.ok){document.getElementById('adminErr').textContent='Wrong password';return;}
+    DATA=await r.json();
+    localStorage.setItem('ugochat_admin_pwd',PWD);
+    document.getElementById('loginBox').classList.add('hidden');
+    document.getElementById('panel').classList.remove('hidden');
+    render(); loadQR(); loadPending();
+  } catch(e){document.getElementById('adminErr').textContent='Error: '+e.message;}
+}
+function render(){
+  if(!DATA)return;
+  const s=document.getElementById('searchInput').value.toLowerCase();
+  const sort=document.getElementById('sortSel').value||'createdAt_desc';
+  const fields=sort.split('_'); const fk=fields[0]; const fd=fields[1];
+  let users=DATA.users.filter(u=>u.username.toLowerCase().includes(s));
+  users.sort((a,b)=>{
+    let va=fk==='quota'?(a.quota===-1?1e12:a.quota):(a[fk]||'');
+    let vb=fk==='quota'?(b.quota===-1?1e12:b.quota):(b[fk]||'');
+    if(typeof va==='string')return fd==='asc'?va.localeCompare(vb):vb.localeCompare(va);
+    return fd==='asc'?va-vb:vb-va;
+  });
+  const tb=document.getElementById('tbody');
+  tb.innerHTML='';
+  users.forEach(u=>{
+    const tr=document.createElement('tr');
+    const q=u.quota===-1?'∞':u.quota;
+    const reg=new Date(u.createdAt).toLocaleString();
+    tr.innerHTML='<td>'+esc(u.username)+'</td><td>'+(u.email||'-')+'</td><td>'+reg+'</td><td>'+q+'</td><td>'+(u.online?'🟢':'-')+'</td>';
+    tb.appendChild(tr);
+  });
+  const st=DATA.stats||{};
+  document.getElementById('stTotal').textContent=st.total||0;
+  document.getElementById('stOnline').textContent=st.online||0;
+  document.getElementById('stEmail').textContent=st.withEmail||0;
+  document.getElementById('stVisits').textContent=st.visits||0;
+  document.getElementById('stToday').textContent=st.todayVisits||0;
+  document.getElementById('stMsg').textContent=st.messagesTotal||0;
+  document.getElementById('stReg').textContent=st.registersTotal||0;
+  document.getElementById('stLogin').textContent=st.loginsTotal||0;
+  document.getElementById('stIP').textContent=st.uniqueIPs||0;
+  if(DATA.visitorLog){renderVisitorLog(DATA.visitorLog);}
+}
+function renderVisitorLog(log){
+  const el=document.getElementById('visitorTable');
+  el.innerHTML='<table style="font-size:12px"><thead><tr><th>Time</th><th>IP</th><th>Country</th><th>City</th></tr></thead><tbody></tbody></table>';
+  const tb=el.querySelector('tbody');
+  log.slice(-50).reverse().forEach(v=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td>'+new Date(v.ts).toLocaleString()+'</td><td>'+esc(v.ip||'')+'</td><td>'+(v.country||'-')+'</td><td>'+(v.city||'-')+'</td>';
+    tb.appendChild(tr);
+  });
+}
+function exportCSV(){
+  if(!DATA)return;
+  const rows=[['Username','Email','Registered','Quota','Online']];
+  DATA.users.forEach(u=>rows.push([u.username,u.email||'',new Date(u.createdAt).toLocaleString(),u.quota,u.online?'Y':'N']));
+  const csv='﻿'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='ugochat_users.csv';a.click();
+}
+async function loadQR(){
+  try {
+    const r=await fetch('/api/pay-qr?pwd='+encodeURIComponent(PWD));
+    if(!r.ok)return;
+    const d=await r.json();
+    if(d.wechatUrl){document.getElementById('qrWechat').src=d.wechatUrl;document.getElementById('qrWechat').style.display='block';document.getElementById('qrWechatStatus').textContent='OK';}
+    if(d.alipayUrl){document.getElementById('qrAlipay').src=d.alipayUrl;document.getElementById('qrAlipay').style.display='block';document.getElementById('qrAlipayStatus').textContent='OK';}
+  } catch(e){}
+}
+async function uploadQR(kind,file){
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    const base64=e.target.result.split(',')[1];
+    try {
+      const r=await fetch('/api/pay-qr?pwd='+encodeURIComponent(PWD),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind,data:base64})});
+      if(r.ok){loadQR();alert('Uploaded!');}else{alert('Failed');}
+    } catch(e){alert('Error: '+e.message);}
+  };
+  };
+  reader.readAsDataURL(file);
+}
+async function loadPending(){
+  try {
+    const r=await fetch('/api/pay-pending?pwd='+encodeURIComponent(PWD));
+    if(!r.ok)return;
+    const d=await r.json();
+    const area=document.getElementById('pendingArea');
+    area.innerHTML='';
+    if(!d.pending||d.pending.length===0){area.innerHTML='<p style="font-size:13px;color:#999">No pending requests</p>';return;}
+    d.pending.forEach(p=>{
+      const div=document.createElement('div');
+      div.className='pend-item';
+      div.innerHTML='<span><b>'+esc(p.username)+'</b> - '+esc(p.pkg||'')+' ('+new Date(p.ts).toLocaleString()+')</span><button onclick='approvePay(""+esc(p.username)+"",""+esc(p.pkg||'')+"")'>Approve</button>';
+      area.appendChild(div);
+    });
+  } catch(e){}
+}
+async function approvePay(u,pkg){
+  if(!confirm('Approve payment for '+u+' ('+pkg+')?'))return;
+  try {
+    const r=await fetch('/admin/pay-approve?pwd='+encodeURIComponent(PWD),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,pkg})});
+    const d=await r.json();
+    if(d.ok){alert('Approved!');loadPending();render();}else{alert('Failed: '+(d.error||'?'));}
+  } catch(e){alert('Error: '+e.message);}
+}
+async function clearVisitors(){
+  if(!confirm('Clear all visitor data?'))return;
+  try {
+    const r=await fetch('/admin/clear-visitors?pwd='+encodeURIComponent(PWD));
+    const d=await r.json();
+    if(d.ok){alert('Cleared');render();}else{alert('Failed');}
+  } catch(e){alert('Error: '+e.message);}
+}
+function logout(){localStorage.removeItem('ugochat_admin_pwd');location.reload();}
+(function(){
+  const saved=localStorage.getItem('ugochat_admin_pwd');
+  if(saved){document.getElementById('adminPwd').value=saved;doLogin();}
+})();
+</scr'+'ipt>
+</body>
+</html>

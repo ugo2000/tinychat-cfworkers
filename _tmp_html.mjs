@@ -1,3 +1,5 @@
+
+const mod = {};
 export const HTML = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -80,6 +82,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 #buyQrImg{margin:0 auto;display:block;max-width:200px}
 .buy-paid-btn{background:#4caf50;color:#fff;border:none;padding:10px;width:100%;border-radius:8px;font-size:14px;cursor:pointer;margin-top:10px}
 .buy-note{margin-top:8px;font-size:12px;color:#999;text-align:center}
+.lang-toggle{font-size:13px;cursor:pointer;opacity:.9}
+.lang-toggle:hover{opacity:1}
 .logout-btn{background:rgba(255,255,255,.15);border:none;color:#fff;padding:3px 10px;border-radius:12px;cursor:pointer;font-size:12px;display:none}
 </style>
 </head>
@@ -94,14 +98,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <span class="nav-link" id="navAbout" onclick="navAbout()" target="_blank">&#9432; About</span>
 </div>
 <div class="nav-right">
-
+<span class="nav-link lang-btn lang-toggle" id="navLang" onclick="switchLang()">EN</span>
 <button class="logout-btn" id="btnLogout" onclick="doLogout()">&#128682;</button>
 </div>
 </div>
 <div id="pageLogin" class="page form-page">
 <h2 data-i18n="loginTitle">Login</h2>
-<div class="form-group"><label>Username or Email</label>
-<input id="loginUser" maxlength="60" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()"></div>
+<div class="form-group"><label data-i18n="regLabelUser">Username</label>
+<input id="loginUser" maxlength="20" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()"></div>
 <div class="form-group"><label data-i18n="regLabelPass">Password</label>
 <input id="loginPass" type="password" onkeydown="if(event.key==='Enter')doLogin()"></div>
 <button class="btn" onclick="doLogin()" data-i18n="loginBtn">Login</button>
@@ -115,8 +119,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <input id="regUser" maxlength="20" autocomplete="off"></div>
 <div class="form-group"><label data-i18n="regLabelPass">Password</label>
 <input id="regPass" type="password"></div>
-<div class="form-group"><label>Email <span style="color:#f44336">*</span></label>
-<input id="regEmail" type="email" maxlength="60" required></div>
+<div class="form-group"><label data-i18n="regLabelEmail">Email (optional)</label>
+<input id="regEmail" type="email" maxlength="60"></div>
 <button class="btn" onclick="doRegister()" data-i18n="regBtn">Register</button>
 <div class="err" id="regError"></div>
 <button class="link-btn" onclick="showLogin()" data-i18n="hasAccount">Has account? Login</button>
@@ -167,12 +171,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 <script>
 const wsUrl = 'wss://' + location.host + '/chat';
-const TINYCHAT_VER = '20260810-0715';
-(function(){ try { fetch('/api/version').then(r=>r.json()).then(d=>{ if(d&&d.version&&d.version!==TINYCHAT_VER){ localStorage.setItem('tinychat_version', d.version); location.reload(true); } }).catch(()=>{}); } catch(e){} })();
 let ws, token, username, quota = 100, geo = '', manualClose = false;
 let reconnectTimer = null, reconnectAttempts = 0;
 let privateTo = '', randomPeer = null, randomFinding = false;
-let lang = localStorage.getItem('tinychat_lang') || 'en';
+let lang = localStorage.getItem('tinychat_lang') || 'zh';
 let pendingTimer = null;
 let wxPollTimer = null;
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -182,6 +184,29 @@ function api(path, body) {
   return fetch(path, { method: 'POST', headers: h, body: JSON.stringify(body || {}) });
 }
 function i18n(s) { return s || ''; }
+const zh = {
+  loginTitle:'Login', regTitle:'Register', loginBtn:'Login', regBtn:'Register',
+  regLabelUser:'Username', regLabelPass:'Password', regLabelEmail:'Email (optional)',
+  regPlaceholderUser:'Username', regPlaceholderPass:'Password',
+  noAccount:'No account? Register', hasAccount:'Has account? Login',
+  aboutLink:'About ugochat',
+  selectPrivate:'Public Chat', dmPlaceholder:'Username', dmBtn:'DM',
+  privateHint:'DM: {u}', connected:'Connected', reconnecting:'Reconnecting...',
+  sessionExpired:'Session expired, please login again',
+  sendPlaceholder:'Type message...', sendBtn:'Send',
+  navChat:'Chat', navRandom:'Random', navAbout:'About', navPricing:'Pricing',
+  logoutBtn:'Logout',
+  quotaUsed:'Quota used: {n}', quotaExhausted:'Quota exhausted. Upgrade for unlimited.',
+  buyTitle:'Upgrade', pkgOnce:'Lifetime', lblOnce:'One-time, unlimited',
+  pkgYear:'Yearly', lblYear:'per year, unlimited',
+  pkgMonth:'Monthly', lblMonth:'per month, unlimited',
+  buyNote:'Real payment coming soon. Mock mode active.',
+  buySuccess:'Upgrade successful! Enjoy unlimited messaging.',
+  buyWaiting:'Waiting for admin approval...',
+  footerAbout:'About ugochat', footerContact:'Questions? Contact',
+  randomFinding:'Finding stranger...', randomPaired:'Paired! Say hi',
+  randomNext:'Next', randomExit:'Exit', randomLeft:'Stranger left'
+};
 const en = {
   loginTitle:'Login', regTitle:'Register', loginBtn:'Login', regBtn:'Register',
   regLabelUser:'Username', regLabelPass:'Password', regLabelEmail:'Email (optional)',
@@ -205,7 +230,7 @@ const en = {
   randomFinding:'Finding stranger...', randomPaired:'Paired! Say hi',
   randomNext:'Next', randomExit:'Exit', randomLeft:'Stranger left'
 };
-function t(k) { return en[k] || k; }
+function t(k) { return (lang === 'zh' ? zh : en)[k] || k; }
 function applyI18n() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const k = el.getAttribute('data-i18n');
@@ -220,7 +245,12 @@ function applyI18n() {
   if (privateTo) { const h = document.getElementById('privateMode'); if (h) h.textContent = 'DM: ' + privateTo; }
   updateQuotaBadge();
 }
-
+function switchLang() {
+  lang = lang === 'zh' ? 'en' : 'zh';
+  localStorage.setItem('tinychat_lang', lang);
+  applyI18n();
+  refreshChatI18n();
+}
 function navChat() { if (!username) { showLogin(); return; } startChat(); }
 function navRandom() { if (!username) { showLogin(); } else startRandom(); }
 function navAbout() { window.open('/about', '_blank'); }
@@ -268,18 +298,14 @@ function startChat() {
 function connectWS() {
   manualClose = false;
   if (ws) { ws.onclose = null; ws.close(); }
-  // Guard: reject literal "undefined"/null/empty tokens (old localStorage pollution)
-  if (!token || token === 'undefined' || token === 'null' || token === '') {
-    doLogout(); return;
-  }
-  const fullUrl = 'wss://' + location.host + '/chat?token=' + encodeURIComponent(token);
-  ws = new WebSocket(fullUrl);
+  ws = new WebSocket(wsUrl);
   ws.onopen = () => {
     reconnectAttempts = 0;
     updateConnDot('\uD83D\uDFE2');
+    ws.send(JSON.stringify({type:'auth', token}));
   };
   ws.onmessage = evt => { try { handleWSMessage(JSON.parse(evt.data)); } catch(e) {} };
-  ws.onclose = () => { if (!manualClose) scheduleReconnect(); updateConnDot('\uD83D\uDD34'); const mi = document.getElementById('msgInput'); if (mi) mi.disabled = true; };
+  ws.onclose = () => { if (!manualClose) scheduleReconnect(); updateConnDot('\uD83D\uDD34'); };
   ws.onerror = () => { updateConnDot('\uD83D\uDD34'); };
 }
 function updateConnDot(color) {
@@ -296,12 +322,11 @@ function scheduleReconnect() {
 function handleWSMessage(msg) {
   if (msg.type === 'init') {
     geo = msg.geo || '';
-    document.getElementById('msgInput').disabled = false;
     msg.messages && msg.messages.forEach(m => addMessage(m));
     msg.online && msg.online.forEach(u => addOnlineUser(u));
     updateQuotaBadge();
   } else if (msg.type === 'message') {
-    addMessage({...msg, direction: msg.username === username ? 'outgoing' : 'incoming'});
+    addMessage({...msg, direction:'incoming'});
   } else if (msg.type === 'online') {
     addOnlineUser({username:msg.username, geo:msg.geo});
     addSystem(msg.username + ' joined');
@@ -309,7 +334,7 @@ function handleWSMessage(msg) {
     removeMember(msg.username);
     addSystem(msg.username + ' left');
   } else if (msg.type === 'private') {
-    addMessage({...msg, direction: msg.from === username ? 'outgoing' : 'incoming', private:true});
+    addMessage({...msg, direction:'incoming', private:true});
   } else if (msg.type === 'quota') {
     quota = msg.quota;
     updateQuotaBadge();
@@ -327,7 +352,7 @@ function handleWSMessage(msg) {
     document.getElementById('randomStatus').textContent = t('randomPaired');
     document.getElementById('btnRandom').classList.add('active');
   } else if (msg.type === 'random_msg') {
-    addMessage({from:msg.from, geo:msg.geo, text:msg.text, direction: msg.from === username ? 'outgoing' : 'incoming', private:true});
+    addMessage({from:msg.from, geo:msg.geo, text:msg.text, direction:'incoming', private:true});
   } else if (msg.type === 'random_peer_left') {
     randomPeer = null; randomFinding = false;
     document.getElementById('randomBanner').style.display = 'none';
@@ -434,11 +459,13 @@ function sendMsg() {
   const msg = { type: 'message', text, ts: Date.now(), geo };
   if (randomPeer) {
     msg.type = 'random_msg'; msg.to = randomPeer;
+    addMessage({...msg, direction:'outgoing', from:username, private:true});
   } else if (privateTo) {
     msg.type = 'private'; msg.to = privateTo;
+    addMessage({...msg, direction:'outgoing', from:username, private:true});
+  } else {
+    addMessage({...msg, direction:'outgoing', from:username});
   }
-  // No optimistic render: the server echoes every message to ALL sockets
-  // (direction outgoing/incoming), so all devices of the same account stay in sync.
   if (ws && ws.readyState === 1) ws.send(JSON.stringify(msg));
 }
 let randomTo = '';
@@ -553,7 +580,6 @@ function doLogout() {
   privateTo = ''; randomPeer = null;
   lastMembers = [];
   document.getElementById('msgArea').innerHTML = '';
-  document.getElementById('msgInput').disabled = true;
   showLogin();
 }
 // Init
@@ -561,17 +587,12 @@ function doLogout() {
   token = localStorage.getItem('tinychat_token');
   username = localStorage.getItem('tinychat_username');
   lang = localStorage.getItem('tinychat_lang') || 'zh';
-  // Sanitize localStorage pollution from old buggy versions
-  if (token === 'undefined' || token === 'null' || token === '') {
-    localStorage.removeItem('tinychat_token'); localStorage.removeItem('tinychat_username');
-    token = null; username = null;
-  }
   applyI18n();
   if (token && username) { showPage('Chat'); connectWS(); }
   else { showLogin(); }
   document.getElementById('msgInput').disabled = true;
 })();
-</script>
+</scr${""}ipt>
 </body>
 </html>`;
 
@@ -775,8 +796,7 @@ async function loadPending(){
     d.pending.forEach(p=>{
       const div=document.createElement('div');
       div.className='pend-item';
-      const Q=String.fromCharCode(39);
-      div.innerHTML='<span><b>'+esc(p.username)+'</b> - '+esc(p.pkg||'')+' ('+new Date(p.ts).toLocaleString()+')</span><button onclick="approvePay('+Q+esc(p.username)+Q+','+Q+esc(p.pkg||'')+Q+')">Approve</button>';
+      div.innerHTML='<span><b>'+esc(p.username)+'</b> - '+esc(p.pkg||'')+' ('+new Date(p.ts).toLocaleString()+')</span><button onclick='approvePay(""+esc(p.username)+"",""+esc(p.pkg||'')+"")'>Approve</button>';
       area.appendChild(div);
     });
   } catch(e){}
@@ -802,7 +822,7 @@ function logout(){localStorage.removeItem('ugochat_admin_pwd');location.reload()
   const saved=localStorage.getItem('ugochat_admin_pwd');
   if(saved){document.getElementById('adminPwd').value=saved;doLogin();}
 })();
-</script>
+</scr${""}ipt>
 </body>
 </html>`;
 
@@ -842,9 +862,10 @@ async function register(){
 }
 async function wsTest(cred){
   return new Promise(resolve=>{
-    ws=new WebSocket('wss://'+location.host+'/chat?token='+encodeURIComponent(cred.t));
+    ws=new WebSocket('wss://'+location.host+'/chat');
     ws.onopen=()=>{
       add('WS OPEN','ok');
+      ws.send(JSON.stringify({type:'auth',token:cred.t}));
       setTimeout(()=>{
         ws.send(JSON.stringify({type:'message',text:'Hello from test',ts:Date.now()}));
         setTimeout(()=>{ws.close();},500);
@@ -866,7 +887,7 @@ async function runTest(){
     status.textContent='PASS - check green logs above';
   } catch(e){status.textContent='ERROR: '+e.message;}
 }
-</script>
+</scr${""}ipt>
 </body>
 </html>`;
 
@@ -965,7 +986,7 @@ const EN=String.fromCharCode(96)+\`<h1>About ugochat</h1>
 <div class="cta"><a href="/">Start Chatting Now</a></div>\`;
 function usgLang(){const cur=document.getElementById('content').innerHTML===ZH?'zh':'en';const next=cur==='zh'?'en':'zh';document.getElementById('content').innerHTML=next==='zh'?ZH:EN;document.getElementById('lngBtn').textContent=next==='zh'?'\u4E2D':'EN';localStorage.setItem('tinychat_lang',next);}
 (function(){const l=localStorage.getItem('tinychat_lang')||'en';document.getElementById('content').innerHTML=l==='zh'?ZH:EN;document.getElementById('lngBtn').textContent=l==='zh'?'\u4E2D':'EN';})();
-</script>
+</scr${""}ipt>
 </body>
 </html>`;
 
@@ -1089,6 +1110,8 @@ const EN=String.fromCharCode(96)+\`<h1>Pricing</h1>
 </div>\`;
 function usgLang(){const cur=document.getElementById('content').innerHTML===ZH?'zh':'en';const next=cur==='zh'?'en':'zh';document.getElementById('content').innerHTML=next==='zh'?ZH:EN;document.getElementById('lngBtn').textContent=next==='zh'?'\u4E2D':'EN';localStorage.setItem('tinychat_lang',next);}
 (function(){const l=localStorage.getItem('tinychat_lang')||'en';document.getElementById('content').innerHTML=l==='zh'?ZH:EN;document.getElementById('lngBtn').textContent=l==='zh'?'\u4E2D':'EN';})();
-</script>
+</scr${""}ipt>
 </body>
 </html>`;
+
+export const { HTML, ADMIN_HTML, TEST_HTML, ABOUT_HTML, PRICING_HTML } = mod;
