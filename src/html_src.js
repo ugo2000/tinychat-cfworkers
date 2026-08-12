@@ -502,6 +502,11 @@ function refreshChatI18n() {
     if (s) s.textContent = randomPeer ? t('randomPaired') : t('randomFinding');
   }
 }
+function fmtTime(ms) {
+  const d = new Date(ms);
+  const p = n => (n < 10 ? '0' + n : '' + n);
+  return p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+}
 function addMessage(msg) {
   const area = document.getElementById('msgArea');
   if (!area) return;
@@ -518,7 +523,8 @@ function addMessage(msg) {
     const from = esc(msg.from || msg.username || '?');
     const geoTxt = msg.geo ? ' <span class="geo">(' + esc(msg.geo) + ')</span>' : '';
     const lock = msg.private ? ' &#128274;' : '';
-    const ts = msg.ts ? '<span class="ts">' + new Date(msg.ts).toLocaleTimeString() + '</span>' : '';
+    const tsVal = msg.ts || msg.timestamp;
+    const ts = tsVal ? '<span class="ts">' + fmtTime(tsVal) + '</span>' : '';
     div.innerHTML = '<div class="uname">' + from + geoTxt + lock + '</div><div>' + esc(msg.text || '') + '</div>' + ts;
   }
   area.appendChild(div);
