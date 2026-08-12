@@ -115,6 +115,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <input id="regUser" maxlength="20" autocomplete="off"></div>
 <div class="form-group"><label data-i18n="regLabelPass">Password</label>
 <input id="regPass" type="password"></div>
+<div class="form-group"><label data-i18n="regLabelPassConfirm">Confirm Password</label>
+<input id="regPassConfirm" type="password" onkeydown="if(event.key==='Enter')doRegister()"></div>
 <div class="form-group"><label>Email <span style="color:#f44336">*</span></label>
 <input id="regEmail" type="email" maxlength="60" required></div>
 <button class="btn" onclick="doRegister()" data-i18n="regBtn">Register</button>
@@ -184,9 +186,10 @@ function api(path, body) {
 function i18n(s) { return s || ''; }
 const en = {
   loginTitle:'Login', regTitle:'Register', loginBtn:'Login', regBtn:'Register',
-  regLabelUser:'Username', regLabelPass:'Password', regLabelEmail:'Email (optional)',
+  regLabelUser:'Username', regLabelPass:'Password', regLabelPassConfirm:'Confirm Password', regLabelEmail:'Email (optional)',
   regPlaceholderUser:'Username', regPlaceholderPass:'Password',
   noAccount:'No account? Register', hasAccount:'Has account? Login',
+  passwordMismatch:'Passwords do not match',
   aboutLink:'About ugochat',
   selectPrivate:'Public Chat', dmPlaceholder:'Username', dmBtn:'DM',
   privateHint:'DM: {u}', connected:'Connected', reconnecting:'Reconnecting...',
@@ -207,9 +210,10 @@ const en = {
 };
 const zh = {
   loginTitle:'登录', regTitle:'注册', loginBtn:'登录', regBtn:'注册',
-  regLabelUser:'用户名', regLabelPass:'密码', regLabelEmail:'邮箱(可选)',
+  regLabelUser:'用户名', regLabelPass:'密码', regLabelPassConfirm:'确认密码', regLabelEmail:'邮箱(可选)',
   regPlaceholderUser:'用户名', regPlaceholderPass:'密码',
   noAccount:'没有账号？注册', hasAccount:'已有账号？登录',
+  passwordMismatch:'两次密码不一致',
   aboutLink:'关于 ugochat',
   selectPrivate:'公开聊天', dmPlaceholder:'用户名', dmBtn:'私信',
   privateHint:'私信: {u}', connected:'已连接', reconnecting:'重连中...',
@@ -271,8 +275,13 @@ async function doLogin() {
 async function doRegister() {
   const u = document.getElementById('regUser').value.trim();
   const p = document.getElementById('regPass').value;
+  const pConfirm = document.getElementById('regPassConfirm').value;
   const e = document.getElementById('regEmail') ? document.getElementById('regEmail').value.trim() : '';
   document.getElementById('regError').textContent = '';
+  if (p !== pConfirm) {
+    document.getElementById('regError').textContent = t('passwordMismatch');
+    return;
+  }
   try {
     const r = await fetch('/api/register', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username:u, password:p, email:e}) });
     const d = await r.json();
