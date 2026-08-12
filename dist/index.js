@@ -725,7 +725,8 @@ export class ChatRoom {
     users[username] = { hash: await hashPassword(password), createdAt: Date.now(), quota: 100, email };
     await this.state.storage.put('users', users);
     await this._inc('registersTotal');
-    return json({ ok: true });
+    const token = await createToken({ username });
+    return json({ ok: true, username, token, quota: 100 });
   }
 
   async handleLogin(request) {
