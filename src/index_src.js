@@ -6,7 +6,7 @@ const BAD_WORDS = ['fuck','shit','ass','bitch','damn','crap','dick','piss',
   'slut','whore','nigger','fag','asshole','bastard','cock','cunt',
   'fuckyou','fck','wtf','stfu','cao','sb'];
 
-const APP_VERSION = '20260812-1720';
+const APP_VERSION = '20260812-1733';
 
 const SECRET = new TextEncoder().encode('tinychat-hmac-secret-2026');
 
@@ -485,6 +485,13 @@ export class ChatRoom {
     const email = (body.email || '').trim();
     if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
       return json({ ok: false, error: 'Invalid email' }, 400);
+    }
+    // Check if email already registered
+    let users = await this.state.storage.get('users') || {};
+    for (const u of Object.values(users)) {
+      if (u.email === email) {
+        return json({ ok: false, error: 'Email already registered' }, 409);
+      }
     }
     // rate limit: max 1 per minute per email
     const lastSent = await this.state.storage.get('codeSent:' + email);
