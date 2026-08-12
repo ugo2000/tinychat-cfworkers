@@ -417,7 +417,8 @@ function handleWSMessage(msg) {
     quota = msg.quota;
     updateQuotaBadge();
     if (payPollTimer) { clearInterval(payPollTimer); payPollTimer = null; }
-    if (quota < 0 && wasLimited) addSystem(t('buySuccess')); else if (msg.type === 'system') {
+    if (quota < 0 && wasLimited) addSystem(t('buySuccess'));
+  } else if (msg.type === 'system') {
     if (msg.code === 'QUOTA_EXHAUSTED') { openBuy(); }
     addSystem(msg.text || '');
   } else if (msg.type === 'random_waiting') {

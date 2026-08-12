@@ -1,4 +1,4 @@
-﻿// ugochat - Cloudflare Workers + Durable Objects
+// ugochat - Cloudflare Workers + Durable Objects
 import HTML, { ADMIN_HTML, TEST_HTML, ABOUT_HTML, PRICING_HTML } from './html.js';
 import { isConfigured as wxConfigured, buildCtx as wxCtx, wechatUnifiedOrder as wxOrder, decryptResource as wxDecrypt, verifyNotify as wxVerify } from './wechat.js';
 
@@ -6,12 +6,11 @@ const BAD_WORDS = ['fuck','shit','ass','bitch','damn','crap','dick','piss',
   'slut','whore','nigger','fag','asshole','bastard','cock','cunt',
   'fuckyou','fck','wtf','stfu','cao','sb'];
 
-const ADMIN_PASSWORD = 'TinyChatAdmin2026!'; // 涓存椂瀵嗙爜锛屾竻闄ょ敤鎴锋暟鎹悗璇蜂慨鏀?
 const APP_VERSION = '20260812-1810';
 
 const SECRET = new TextEncoder().encode('tinychat-hmac-secret-2026');
 
-// ?Cloudflare secret ADMIN_PASSWORD wrangler secret put ADMIN_PASSWORD?//  `wrangler secret put ADMIN_PASSWORD` 
+// Admin password is configured via Cloudflare secret ADMIN_PASSWORD (wrangler secret put ADMIN_PASSWORD)
 // ===================== Worker  =====================
 export default {
   async fetch(request, env) {
@@ -31,7 +30,7 @@ export default {
 
     if (path === '/api/pay-qr') {
       const pwd = url.searchParams.get('pwd') || '';
-      if (pwd !== (ADMIN_PASSWORD || env.ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
+      if (pwd !== (env.ADMIN_PASSWORD || ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
       const stub = env.CHAT.idFromName('global12');
       return env.CHAT.get(stub).fetch(request);
     }
@@ -85,25 +84,25 @@ export default {
 
     if (path === '/admin/pay-pending') {
       const pwd = url.searchParams.get('pwd') || '';
-      if (pwd !== (ADMIN_PASSWORD || env.ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
+      if (pwd !== (env.ADMIN_PASSWORD || ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
       const stub = env.CHAT.idFromName('global12');
       return env.CHAT.get(stub).fetch(request);
     }
     if (path === '/admin/pay-approve') {
       const pwd = url.searchParams.get('pwd') || '';
-      if (pwd !== (ADMIN_PASSWORD || env.ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
+      if (pwd !== (env.ADMIN_PASSWORD || ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
       const stub = env.CHAT.idFromName('global12');
       return env.CHAT.get(stub).fetch(request);
     }
     if (path === '/admin/clear-visitors') {
       const pwd = url.searchParams.get('pwd') || '';
-      if (pwd !== (ADMIN_PASSWORD || env.ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
+      if (pwd !== (env.ADMIN_PASSWORD || ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
       const stub = env.CHAT.idFromName('global12');
       return env.CHAT.get(stub).fetch(new Request('https://dummy/clear-visitors', { method: 'GET' }));
     }
     if (path === '/admin/clear-users') {
       const pwd = url.searchParams.get('pwd') || '';
-      if (pwd !== (ADMIN_PASSWORD || env.ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
+      if (pwd !== (env.ADMIN_PASSWORD || ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
       const confirm = url.searchParams.get('confirm') || '';
       const stub = env.CHAT.idFromName('global12');
       return env.CHAT.get(stub).fetch(new Request('https://dummy/admin/clear-users?confirm=' + confirm, { method: 'GET' }));
@@ -156,7 +155,7 @@ export default {
     if (path === '/admin/users') {
       const url = new URL(request.url);
       const pwd = url.searchParams.get('pwd') || '';
-      if (pwd !== (ADMIN_PASSWORD || env.ADMIN_PASSWORD || '')) {
+      if (pwd !== (env.ADMIN_PASSWORD || ADMIN_PASSWORD || '')) {
         return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
       }
       const stub = env.CHAT.idFromName('global12');
