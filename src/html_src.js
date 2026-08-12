@@ -80,7 +80,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 #buyQrImg{margin:0 auto;display:block;max-width:200px}
 .buy-paid-btn{background:#4caf50;color:#fff;border:none;padding:10px;width:100%;border-radius:8px;font-size:14px;cursor:pointer;margin-top:10px}
 .buy-note{margin-top:8px;font-size:12px;color:#999;text-align:center}
-.logout-btn{background:rgba(255,255,255,.15);border:none;color:#fff;padding:3px 10px;border-radius:12px;cursor:pointer;font-size:12px;display:none}
+.logout-btn{background:rgba(255,255,255,.15);border:none;color:#fff;padding:3px 10px;border-radius:12px;cursor:pointer;font-size:12px}
 </style>
 </head>
 <body>
@@ -95,7 +95,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 <div class="nav-right">
 
-<button class="logout-btn" id="btnLogout" onclick="doLogout()">&#128682;</button>
+<button class="logout-btn" id="btnLogout" onclick="doLogout()" data-i18n="logoutBtn">&#128682; Logout</button>
 </div>
 </div>
 <div id="pageLogin" class="page form-page">
@@ -237,7 +237,10 @@ function applyI18n() {
   });
   document.querySelectorAll('.nav-link').forEach(el => { el.style.display = el.id && el.id.startsWith('nav') ? '' : ''; });
   const btn = document.getElementById('btnLogout');
-  if (btn) btn.style.display = username ? '' : 'none';
+  if (btn) {
+    btn.style.display = username ? '' : 'none';
+    if (username) btn.innerHTML = '&#128682; ' + t('logoutBtn');
+  }
   const navLangEl = document.getElementById('navLang');
   if (navLangEl) navLangEl.textContent = lang === 'zh' ? 'EN' : '\u4E2D';
   if (privateTo) { const h = document.getElementById('privateMode'); if (h) h.textContent = 'DM: ' + privateTo; }
