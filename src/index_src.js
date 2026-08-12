@@ -6,7 +6,7 @@ const BAD_WORDS = ['fuck','shit','ass','bitch','damn','crap','dick','piss',
   'slut','whore','nigger','fag','asshole','bastard','cock','cunt',
   'fuckyou','fck','wtf','stfu','cao','sb'];
 
-const APP_VERSION = '20260812-1650';
+const APP_VERSION = '20260812-1720';
 
 const SECRET = new TextEncoder().encode('tinychat-hmac-secret-2026');
 
@@ -498,12 +498,15 @@ export class ChatRoom {
     // TODO: send email via configured email service (for now, log it)
     console.log('[TinyChat] Verification code for', email, ':', code);
     // For development: return code in response (remove in production!)
-    const emailConfigured = !!(this.env.SMTP_HOST && this.env.SMTP_USER);
+    const emailConfigured = !!this.env.RESEND_API_KEY;
     if (!emailConfigured) {
       return json({ ok: true, code, message: 'Code generated (email not configured, check server log)' });
     }
-    // Send email via SMTP (if configured)
+    // Send email via Resend API
     try {
+      // 注意：需要在 Resend 控制台验证域名 chathub.asia
+      // 或者使用 Resend 提供的测试地址 onboarding@resend.dev
+      const fromAddr = 'onboarding@resend.dev';
       const emailResp = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -511,7 +514,7 @@ export class ChatRoom {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          from: 'noreply@chathub.asia',
+          from: fromAddr,
           to: email,
           subject: 'Your verification code for TinyChat',
           html: `<p>Your verification code is: <strong>${code}</strong></p><p>It will expire in 10 minutes.</p>`
@@ -520,12 +523,12 @@ export class ChatRoom {
       if (!emailResp.ok) {
         const err = await emailResp.text();
         console.error('[TinyChat] Failed to send email:', err);
-        return json({ ok: false, error: 'Failed to send email' }, 500);
+        return json({ ok: false, error: 'Failed to send email: ' + err }, 500);
       }
       return json({ ok: true, message: 'Code sent to ' + email });
     } catch (e) {
       console.error('[TinyChat] Email send error:', e);
-      return json({ ok: false, error: 'Failed to send email' }, 500);
+      return json({ ok: false, error: 'Failed to send email: ' + e.message }, 500);
     }
   }
 
