@@ -171,7 +171,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 <script>
 const wsUrl = 'wss://' + location.host + '/chat';
-const TINYCHAT_VER = '20260812-1620';
+const TINYCHAT_VER = '20260812-1650';
 (function(){ try { fetch('/api/version').then(r=>r.json()).then(d=>{ if(d&&d.version&&d.version!==TINYCHAT_VER){ localStorage.setItem('tinychat_version', d.version); location.reload(true); } }).catch(()=>{}); } catch(e){} })();
 let ws, token, username, quota = 100, geo = '', manualClose = false;
 let reconnectTimer = null, reconnectAttempts = 0;
@@ -321,7 +321,15 @@ async function sendVerifyCode() {
     const r = await fetch('/api/send-code', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email:e}) });
     const d = await r.json();
     if (d.ok) {
-      document.getElementById('regError').textContent = t('codeSentTo') + ' ' + e;
+      // 在开发模式下，验证码会返回在响应中
+      let msg = t('codeSentTo') + ' ' + e;
+      if (d.code) {
+        msg = '验证码: ' + d.code + ' (开发模式)';
+        // 也显示英文
+        if (lang === 'en') msg = 'Verification code: ' + d.code + ' (dev mode)';
+      }
+      document.getElementById('regError').textContent = msg;
+      document.getElementById('regError').style.color = '#2e7d32'; // 绿色表示成功
       codeCountdown = 60;
       codeTimer = setInterval(() => {
         btn.textContent = codeCountdown + 's';
@@ -334,10 +342,12 @@ async function sendVerifyCode() {
       }, 1000);
     } else {
       document.getElementById('regError').textContent = d.error || t('sendCodeError');
+      document.getElementById('regError').style.color = '#d32f2f';
       btn.disabled = false;
     }
   } catch(err) {
     document.getElementById('regError').textContent = t('sendCodeError');
+    document.getElementById('regError').style.color = '#d32f2f';
     btn.disabled = false;
   }
 }
