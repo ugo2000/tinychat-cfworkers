@@ -6,7 +6,7 @@ const BAD_WORDS = ['fuck','shit','ass','bitch','damn','crap','dick','piss',
   'slut','whore','nigger','fag','asshole','bastard','cock','cunt',
   'fuckyou','fck','wtf','stfu','cao','sb'];
 
-const APP_VERSION = '20260812-1615';
+const APP_VERSION = '20260812-1620';
 
 const SECRET = new TextEncoder().encode('tinychat-hmac-secret-2026');
 
@@ -35,7 +35,7 @@ export default {
       return env.CHAT.get(stub).fetch(request);
     }
 
-    if (path === '/api/register' || path === '/api/login' ||
+    if (path === '/api/register' || path === '/api/login' || path === '/api/send-code' ||
         path === '/api/users' || path === '/api/messages' ||
         path === '/api/quota' || path === '/api/buy' || path === '/api/pay-confirm') {
       const stub = env.CHAT.idFromName('global12');
