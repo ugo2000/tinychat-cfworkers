@@ -181,6 +181,7 @@ let privateTo = '', randomPeer = null, randomFinding = false;
 let lang = localStorage.getItem('tinychat_lang') || 'en';
 let pendingTimer = null;
 let wxPollTimer = null;
+let payPollTimer = null;
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function api(path, body) {
   const h = { 'Content-Type': 'application/json' };
@@ -412,9 +413,11 @@ function handleWSMessage(msg) {
   } else if (msg.type === 'private') {
     addMessage({...msg, direction: msg.from === username ? 'outgoing' : 'incoming', private:true});
   } else if (msg.type === 'quota') {
+    const wasLimited = quota > 0;
     quota = msg.quota;
     updateQuotaBadge();
-  } else if (msg.type === 'system') {
+    if (payPollTimer) { clearInterval(payPollTimer); payPollTimer = null; }
+    if (quota < 0 && wasLimited) addSystem(t('buySuccess')); else if (msg.type === 'system') {
     if (msg.code === 'QUOTA_EXHAUSTED') { openBuy(); }
     addSystem(msg.text || '');
   } else if (msg.type === 'random_waiting') {
@@ -578,6 +581,7 @@ function loadPayConfig() {
   document.getElementById('buyCloseBtn').style.display = '';
 }
 async function doBuy(pkg) {
+  if (payPollTimer) { clearInterval(payPollTimer); payPollTimer = null; }
   clearInterval(wxPollTimer); clearInterval(pendingTimer);
   document.getElementById('buyOptions').style.display = 'none';
   const qrArea = document.getElementById('buyQrArea');
@@ -627,31 +631,35 @@ async function doBuy(pkg) {
   } catch(e) { tip.textContent = 'Error: ' + e.message; }
 }
 async function confirmPaid(pkg) {
-  const tip = document.getElementById('buyQrTip') || {};
-  if (tip) tip.textContent = t('buyWaiting');
   try {
     const r = await api('/api/pay-confirm', {pkg, token});
     const d = await r.json();
-    if (d.pending) {
-      pendingTimer = setInterval(async () => {
-        const pr = await api('/api/pay-pending', {token});
-        const pd = await pr.json();
-        if (pd.approved) {
-          clearInterval(pendingTimer);
-          quota = -1; updateQuotaBadge();
-          document.getElementById('buyResultText').textContent = t('buySuccess');
-          document.getElementById('buyResult').style.display = '';
-          setTimeout(closeBuy, 1500);
-        }
-      }, 3000);
-      setTimeout(() => { if (pendingTimer) { clearInterval(pendingTimer); } }, 30000);
-    } else if (d.quota < 0) {
+    // Close the payment window immediately, per request
+    closeBuy();
+    if (d.quota < 0 || d.approved) {
+      // Already approved (e.g. admin pre-approved) -> enjoy now
       quota = -1; updateQuotaBadge();
-      document.getElementById('buyResultText').textContent = t('buySuccess');
-      document.getElementById('buyResult').style.display = '';
-      setTimeout(closeBuy, 1500);
+      addSystem(t('buySuccess'));
+    } else {
+      // Waiting for admin approval; poll in the background (window already closed)
+      startPayPoll();
+      addSystem(t('buyWaiting'));
     }
   } catch(e) {}
+}
+function startPayPoll() {
+  if (payPollTimer) return; // already polling
+  payPollTimer = setInterval(async () => {
+    try {
+      const pr = await api('/api/pay-pending', {token});
+      const pd = await pr.json();
+      if (pd.approved || pd.quota < 0) {
+        clearInterval(payPollTimer); payPollTimer = null;
+        quota = -1; updateQuotaBadge();
+        addSystem(t('buySuccess'));
+      }
+    } catch(e) {}
+  }, 3000);
 }
 function doLogout() {
   manualClose = true;

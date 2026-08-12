@@ -38,7 +38,7 @@ export default {
 
     if (path === '/api/register' || path === '/api/login' || path === '/api/send-code' ||
         path === '/api/users' || path === '/api/messages' ||
-        path === '/api/quota' || path === '/api/buy' || path === '/api/pay-confirm') {
+        path === '/api/quota' || path === '/api/buy' || path === '/api/pay-confirm' || path === '/api/pay-pending') {
       const stub = env.CHAT.idFromName('global12');
       return env.CHAT.get(stub).fetch(request);
     }
@@ -822,8 +822,10 @@ export class ChatRoom {
     const payload = await verifyToken(body.token);
     if (!payload) return json({ ok: false, error: 'Unauthorized' }, 401);
     const pending = await this.state.storage.get('payPending') || [];
-    const mine = pending.filter(p => p.username === payload.username && p.status === 'pending');
-    return json({ pending: mine });
+    const mine = pending.filter(p => p.username === payload.username);
+    const approved = mine.some(p => p.status === 'approved') || (await this.getQuota(payload.username)) < 0;
+    const hasPending = mine.some(p => p.status === 'pending');
+    return json({ approved, pending: hasPending });
   }
 
   //  +  done
