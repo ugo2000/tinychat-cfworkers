@@ -167,7 +167,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 <script>
 const wsUrl = 'wss://' + location.host + '/chat';
-const TINYCHAT_VER = '20260812-1030';
+const TINYCHAT_VER = '20260812-1545';
 (function(){ try { fetch('/api/version').then(r=>r.json()).then(d=>{ if(d&&d.version&&d.version!==TINYCHAT_VER){ localStorage.setItem('tinychat_version', d.version); location.reload(true); } }).catch(()=>{}); } catch(e){} })();
 let ws, token, username, quota = 100, geo = '', manualClose = false;
 let reconnectTimer = null, reconnectAttempts = 0;
@@ -205,7 +205,30 @@ const en = {
   randomFinding:'Finding stranger...', randomPaired:'Paired! Say hi',
   randomNext:'Next', randomExit:'Exit', randomLeft:'Stranger left'
 };
-function t(k) { return en[k] || k; }
+const zh = {
+  loginTitle:'登录', regTitle:'注册', loginBtn:'登录', regBtn:'注册',
+  regLabelUser:'用户名', regLabelPass:'密码', regLabelEmail:'邮箱(可选)',
+  regPlaceholderUser:'用户名', regPlaceholderPass:'密码',
+  noAccount:'没有账号？注册', hasAccount:'已有账号？登录',
+  aboutLink:'关于 ugochat',
+  selectPrivate:'公开聊天', dmPlaceholder:'用户名', dmBtn:'私信',
+  privateHint:'私信: {u}', connected:'已连接', reconnecting:'重连中...',
+  sessionExpired:'会话过期，请重新登录',
+  sendPlaceholder:'输入消息...', sendBtn:'发送',
+  navChat:'聊天', navRandom:'随机', navAbout:'关于', navPricing:'价格',
+  logoutBtn:'退出',
+  quotaUsed:'已用配额: {n}', quotaExhausted:'配额用完，升级享无限',
+  buyTitle:'升级', pkgOnce:'买断', lblOnce:'一次性买断，无限消息',
+  pkgYear:'年付', lblYear:'每年无限',
+  pkgMonth:'月付', lblMonth:'每月无限',
+  buyNote:'支付功能即将上线，当前为模拟模式',
+  buySuccess:'升级成功！享受无限消息',
+  buyWaiting:'等待管理员审核...',
+  footerAbout:'关于 ugochat', footerContact:'有问题？联系',
+  randomFinding:'寻找陌生人...', randomPaired:'配对成功！打个招呼',
+  randomNext:'下一个', randomExit:'退出', randomLeft:'陌生人已离开'
+};
+function t(k) { return (lang === 'zh' ? zh[k] : en[k]) || k; }
 function applyI18n() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const k = el.getAttribute('data-i18n');

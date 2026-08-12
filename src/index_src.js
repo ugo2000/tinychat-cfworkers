@@ -6,7 +6,7 @@ const BAD_WORDS = ['fuck','shit','ass','bitch','damn','crap','dick','piss',
   'slut','whore','nigger','fag','asshole','bastard','cock','cunt',
   'fuckyou','fck','wtf','stfu','cao','sb'];
 
-const APP_VERSION = '20260812-1030';
+const APP_VERSION = '20260812-1545';
 
 const SECRET = new TextEncoder().encode('tinychat-hmac-secret-2026');
 
