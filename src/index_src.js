@@ -1,4 +1,4 @@
-// ugochat - Cloudflare Workers + Durable Objects
+﻿// ugochat - Cloudflare Workers + Durable Objects
 import HTML, { ADMIN_HTML, TEST_HTML, ABOUT_HTML, PRICING_HTML } from './html.js';
 import { isConfigured as wxConfigured, buildCtx as wxCtx, wechatUnifiedOrder as wxOrder, decryptResource as wxDecrypt, verifyNotify as wxVerify } from './wechat.js';
 
@@ -6,7 +6,8 @@ const BAD_WORDS = ['fuck','shit','ass','bitch','damn','crap','dick','piss',
   'slut','whore','nigger','fag','asshole','bastard','cock','cunt',
   'fuckyou','fck','wtf','stfu','cao','sb'];
 
-const APP_VERSION = '20260812-1733';
+const ADMIN_PASSWORD = 'TinyChatAdmin2026!'; // 涓存椂瀵嗙爜锛屾竻闄ょ敤鎴锋暟鎹悗璇蜂慨鏀?
+const APP_VERSION = '20260812-1810';
 
 const SECRET = new TextEncoder().encode('tinychat-hmac-secret-2026');
 
@@ -30,7 +31,7 @@ export default {
 
     if (path === '/api/pay-qr') {
       const pwd = url.searchParams.get('pwd') || '';
-      if (pwd !== (env.ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
+      if (pwd !== (ADMIN_PASSWORD || env.ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
       const stub = env.CHAT.idFromName('global12');
       return env.CHAT.get(stub).fetch(request);
     }
@@ -84,21 +85,28 @@ export default {
 
     if (path === '/admin/pay-pending') {
       const pwd = url.searchParams.get('pwd') || '';
-      if (pwd !== (env.ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
+      if (pwd !== (ADMIN_PASSWORD || env.ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
       const stub = env.CHAT.idFromName('global12');
       return env.CHAT.get(stub).fetch(request);
     }
     if (path === '/admin/pay-approve') {
       const pwd = url.searchParams.get('pwd') || '';
-      if (pwd !== (env.ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
+      if (pwd !== (ADMIN_PASSWORD || env.ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
       const stub = env.CHAT.idFromName('global12');
       return env.CHAT.get(stub).fetch(request);
     }
     if (path === '/admin/clear-visitors') {
       const pwd = url.searchParams.get('pwd') || '';
-      if (pwd !== env.ADMIN_PASSWORD) return json({ error: 'unauthorized' }, 401);
+      if (pwd !== (ADMIN_PASSWORD || env.ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
       const stub = env.CHAT.idFromName('global12');
       return env.CHAT.get(stub).fetch(new Request('https://dummy/clear-visitors', { method: 'GET' }));
+    }
+    if (path === '/admin/clear-users') {
+      const pwd = url.searchParams.get('pwd') || '';
+      if (pwd !== (ADMIN_PASSWORD || env.ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
+      const confirm = url.searchParams.get('confirm') || '';
+      const stub = env.CHAT.idFromName('global12');
+      return env.CHAT.get(stub).fetch(new Request('https://dummy/admin/clear-users?confirm=' + confirm, { method: 'GET' }));
     }
 
     if (path === '/test') {
@@ -148,7 +156,7 @@ export default {
     if (path === '/admin/users') {
       const url = new URL(request.url);
       const pwd = url.searchParams.get('pwd') || '';
-      if (pwd !== (env.ADMIN_PASSWORD || '')) {
+      if (pwd !== (ADMIN_PASSWORD || env.ADMIN_PASSWORD || '')) {
         return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
       }
       const stub = env.CHAT.idFromName('global12');
@@ -213,6 +221,7 @@ export class ChatRoom {
         case '/admin/pay-approve': return await this.handlePayApprove(request);
         case '/track':       return await this.handleTrack(url);
         case '/clear-visitors': return await this.handleClearVisitors();
+        case '/admin/clear-users': return await this.handleClearUsers(request);
         default: return json({ error: 'Not found' }, 404);
       }
     } catch (e) {
@@ -511,8 +520,8 @@ export class ChatRoom {
     }
     // Send email via Resend API
     try {
-      // 注意：需要在 Resend 控制台验证域名 chathub.asia
-      // 或者使用 Resend 提供的测试地址 onboarding@resend.dev
+      // 娉ㄦ剰锛氶渶瑕佸湪 Resend 鎺у埗鍙伴獙璇佸煙鍚?chathub.asia
+      // 鎴栬€呬娇鐢?Resend 鎻愪緵鐨勬祴璇曞湴鍧€ onboarding@resend.dev
       const fromAddr = 'onboarding@resend.dev';
       const emailResp = await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -695,6 +704,32 @@ export class ChatRoom {
     await this.state.storage.put('stats', s);
     await this.state.storage.put('visitorLog', []);
     return json({ ok: true });
+  }
+
+  async handleClearUsers(request) {
+    const url = new URL(request.url);
+    const confirm = url.searchParams.get('confirm') || '';
+    if (confirm !== 'YES_DELETE_ALL_USERS') {
+      return json({ ok: false, error: 'Please add ?confirm=YES_DELETE_ALL_USERS to confirm' }, 400);
+    }
+    // Clear all users
+    await this.state.storage.delete('users');
+    // Clear all verification codes
+    try {
+      const list = await this.state.storage.list();
+      const keys = [];
+      for (const [key, value] of list) {
+        if (key.startsWith('code:') || key.startsWith('codeSent:')) {
+          keys.push(key);
+        }
+      }
+      for (const key of keys) {
+        await this.state.storage.delete(key);
+      }
+    } catch (e) {
+      console.error('Error listing keys:', e);
+    }
+    return json({ ok: true, message: 'All users and verification codes cleared' });
   }
 
   async handleMessages() {

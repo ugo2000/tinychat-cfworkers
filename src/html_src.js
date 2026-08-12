@@ -171,7 +171,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 <script>
 const wsUrl = 'wss://' + location.host + '/chat';
-const TINYCHAT_VER = '20260812-1733';
+const TINYCHAT_VER = '20260812-1810';
 (function(){ try { fetch('/api/version').then(r=>r.json()).then(d=>{ if(d&&d.version&&d.version!==TINYCHAT_VER){ localStorage.setItem('tinychat_version', d.version); location.reload(true); } }).catch(()=>{}); } catch(e){} })();
 let ws, token, username, quota = 100, geo = '', manualClose = false;
 let reconnectTimer = null, reconnectAttempts = 0;
