@@ -6,7 +6,7 @@ const BAD_WORDS = ['fuck','shit','ass','bitch','damn','crap','dick','piss',
   'slut','whore','nigger','fag','asshole','bastard','cock','cunt',
   'fuckyou','fck','wtf','stfu','cao','sb'];
 
-const APP_VERSION = '20260812-1545';
+const APP_VERSION = '20260812-1615';
 
 const SECRET = new TextEncoder().encode('tinychat-hmac-secret-2026');
 
@@ -194,8 +194,9 @@ export class ChatRoom {
 
     try {
       switch (path) {
-        case '/api/register': return await this.handleRegister(request);
-        case '/api/login':    return await this.handleLogin(request);
+        case '/api/register':  return await this.handleRegister(request);
+        case '/api/send-code':   return await this.handleSendCode(request);
+        case '/api/login':       return await this.handleLogin(request);
         case '/api/users':    return await this.handleUsers();
         case '/api/messages': return await this.handleMessages();
         case '/api/quota':    return await this.handleQuota(request);
@@ -479,11 +480,61 @@ export class ChatRoom {
   }
 
   // ---- HTTP API ----
+  async handleSendCode(request) {
+    const body = await request.json();
+    const email = (body.email || '').trim();
+    if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
+      return json({ ok: false, error: 'Invalid email' }, 400);
+    }
+    // rate limit: max 1 per minute per email
+    const lastSent = await this.state.storage.get('codeSent:' + email);
+    if (lastSent && Date.now() - lastSent < 60000) {
+      return json({ ok: false, error: 'Please wait 60 seconds before requesting a new code' }, 429);
+    }
+    // generate 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    await this.state.storage.put('code:' + email, { code, ts: Date.now() });
+    await this.state.storage.put('codeSent:' + email, Date.now());
+    // TODO: send email via configured email service (for now, log it)
+    console.log('[TinyChat] Verification code for', email, ':', code);
+    // For development: return code in response (remove in production!)
+    const emailConfigured = !!(this.env.SMTP_HOST && this.env.SMTP_USER);
+    if (!emailConfigured) {
+      return json({ ok: true, code, message: 'Code generated (email not configured, check server log)' });
+    }
+    // Send email via SMTP (if configured)
+    try {
+      const emailResp = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + this.env.RESEND_API_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          from: 'noreply@chathub.asia',
+          to: email,
+          subject: 'Your verification code for TinyChat',
+          html: `<p>Your verification code is: <strong>${code}</strong></p><p>It will expire in 10 minutes.</p>`
+        })
+      });
+      if (!emailResp.ok) {
+        const err = await emailResp.text();
+        console.error('[TinyChat] Failed to send email:', err);
+        return json({ ok: false, error: 'Failed to send email' }, 500);
+      }
+      return json({ ok: true, message: 'Code sent to ' + email });
+    } catch (e) {
+      console.error('[TinyChat] Email send error:', e);
+      return json({ ok: false, error: 'Failed to send email' }, 500);
+    }
+  }
+
   async handleRegister(request) {
     const body = await request.json();
     const username = (body.username || '').trim();
     const password = body.password || '';
     const email = (body.email || '').trim();
+    const code = (body.code || '').trim();
 
     if (username.length < 2 || password.length < 4) {
       return json({ ok: false, error: 'Username min 2 chars, password min 4 chars' }, 400);
@@ -491,19 +542,33 @@ export class ChatRoom {
     if (!/^[a-zA-Z0-9_]+$/.test(username)) {
       return json({ ok: false, error: 'Username: letters, digits, underscore only' }, 400);
     }
-    // email is optional; if provided, must be valid format
-    if (email && !/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
+    // email is required now
+    if (!email) {
+      return json({ ok: false, error: 'Email required' }, 400);
+    }
+    if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
       return json({ ok: false, error: 'Invalid email format' }, 400);
     }
+    // verify code
+    if (!code) {
+      return json({ ok: false, error: 'Verification code required' }, 400);
+    }
+    const storedCode = await this.state.storage.get('code:' + email);
+    if (!storedCode || storedCode.code !== code) {
+      return json({ ok: false, error: 'Invalid verification code' }, 400);
+    }
+    if (Date.now() - storedCode.ts > 600000) { // 10 minutes
+      return json({ ok: false, error: 'Verification code expired' }, 400);
+    }
+    // clear used code
+    await this.state.storage.delete('code:' + email);
 
     let users = await this.state.storage.get('users') || {};
     if (users[username]) {
       return json({ ok: false, error: 'Username taken' }, 409);
     }
-    // uniqueness check by email (only if email provided)
-    if (email) {
-      for (const u of Object.values(users)) { if (u.email === email) return json({ ok: false, error: 'Email already registered' }, 409); }
-    }
+    // uniqueness check by email
+    for (const u of Object.values(users)) { if (u.email === email) return json({ ok: false, error: 'Email already registered' }, 409); }
 
     users[username] = { hash: await hashPassword(password), createdAt: Date.now(), quota: 100, email };
     await this.state.storage.put('users', users);

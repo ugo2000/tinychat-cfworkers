@@ -119,6 +119,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <input id="regPassConfirm" type="password" onkeydown="if(event.key==='Enter')doRegister()"></div>
 <div class="form-group"><label>Email <span style="color:#f44336">*</span></label>
 <input id="regEmail" type="email" maxlength="60" required></div>
+<div class="form-group"><label data-i18n="regLabelCode">Verification Code</label>
+<div style="display:flex;gap:6px"><input id="regCode" maxlength="6" style="flex:1"><button type="button" id="sendCodeBtn" onclick="sendVerifyCode()" data-i18n="sendCodeBtn">Send Code</button></div></div>
 <button class="btn" onclick="doRegister()" data-i18n="regBtn">Register</button>
 <div class="err" id="regError"></div>
 <button class="link-btn" onclick="showLogin()" data-i18n="hasAccount">Has account? Login</button>
@@ -169,7 +171,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 <script>
 const wsUrl = 'wss://' + location.host + '/chat';
-const TINYCHAT_VER = '20260812-1545';
+const TINYCHAT_VER = '20260812-1615';
 (function(){ try { fetch('/api/version').then(r=>r.json()).then(d=>{ if(d&&d.version&&d.version!==TINYCHAT_VER){ localStorage.setItem('tinychat_version', d.version); location.reload(true); } }).catch(()=>{}); } catch(e){} })();
 let ws, token, username, quota = 100, geo = '', manualClose = false;
 let reconnectTimer = null, reconnectAttempts = 0;
@@ -186,7 +188,9 @@ function api(path, body) {
 function i18n(s) { return s || ''; }
 const en = {
   loginTitle:'Login', regTitle:'Register', loginBtn:'Login', regBtn:'Register',
-  regLabelUser:'Username', regLabelPass:'Password', regLabelPassConfirm:'Confirm Password', regLabelEmail:'Email (optional)',
+  regLabelUser:'Username', regLabelPass:'Password', regLabelPassConfirm:'Confirm Password', regLabelEmail:'Email', regLabelCode:'Verification Code',
+  sendCodeBtn:'Send Code', sendCodeSent:'Sent', sendCodeError:'Failed to send', codeSentTo:'Code sent to',
+  codeInvalid:'Invalid code', codeExpired:'Code expired',
   regPlaceholderUser:'Username', regPlaceholderPass:'Password',
   noAccount:'No account? Register', hasAccount:'Has account? Login',
   passwordMismatch:'Passwords do not match',
@@ -210,7 +214,9 @@ const en = {
 };
 const zh = {
   loginTitle:'登录', regTitle:'注册', loginBtn:'登录', regBtn:'注册',
-  regLabelUser:'用户名', regLabelPass:'密码', regLabelPassConfirm:'确认密码', regLabelEmail:'邮箱(可选)',
+  regLabelUser:'用户名', regLabelPass:'密码', regLabelPassConfirm:'确认密码', regLabelEmail:'邮箱', regLabelCode:'验证码',
+  sendCodeBtn:'发送验证码', sendCodeSent:'已发送', sendCodeError:'发送失败', codeSentTo:'验证码已发送到',
+  codeInvalid:'验证码错误', codeExpired:'验证码已过期',
   regPlaceholderUser:'用户名', regPlaceholderPass:'密码',
   noAccount:'没有账号？注册', hasAccount:'已有账号？登录',
   passwordMismatch:'两次密码不一致',
@@ -277,13 +283,22 @@ async function doRegister() {
   const p = document.getElementById('regPass').value;
   const pConfirm = document.getElementById('regPassConfirm').value;
   const e = document.getElementById('regEmail') ? document.getElementById('regEmail').value.trim() : '';
+  const code = document.getElementById('regCode') ? document.getElementById('regCode').value.trim() : '';
   document.getElementById('regError').textContent = '';
   if (p !== pConfirm) {
     document.getElementById('regError').textContent = t('passwordMismatch');
     return;
   }
+  if (!e) {
+    document.getElementById('regError').textContent = 'Email required';
+    return;
+  }
+  if (!code) {
+    document.getElementById('regError').textContent = 'Verification code required';
+    return;
+  }
   try {
-    const r = await fetch('/api/register', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username:u, password:p, email:e}) });
+    const r = await fetch('/api/register', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username:u, password:p, email:e, code:code}) });
     const d = await r.json();
     if (!d.ok) { document.getElementById('regError').textContent = d.error || 'Register failed'; return; }
     token = d.token; username = d.username; quota = d.quota != null ? d.quota : 100;
@@ -291,6 +306,40 @@ async function doRegister() {
     localStorage.setItem('tinychat_username', username);
     startChat();
   } catch(e) { document.getElementById('regError').textContent = 'Network error'; }
+}
+let codeTimer = null, codeCountdown = 0;
+async function sendVerifyCode() {
+  const e = document.getElementById('regEmail').value.trim();
+  const btn = document.getElementById('sendCodeBtn');
+  if (!e || !/^[^@]+@[^@]+\.[^@]+$/.test(e)) {
+    document.getElementById('regError').textContent = 'Invalid email';
+    return;
+  }
+  if (codeCountdown > 0) return;
+  btn.disabled = true;
+  try {
+    const r = await fetch('/api/send-code', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email:e}) });
+    const d = await r.json();
+    if (d.ok) {
+      document.getElementById('regError').textContent = t('codeSentTo') + ' ' + e;
+      codeCountdown = 60;
+      codeTimer = setInterval(() => {
+        btn.textContent = codeCountdown + 's';
+        codeCountdown--;
+        if (codeCountdown < 0) {
+          clearInterval(codeTimer);
+          btn.textContent = t('sendCodeBtn');
+          btn.disabled = false;
+        }
+      }, 1000);
+    } else {
+      document.getElementById('regError').textContent = d.error || t('sendCodeError');
+      btn.disabled = false;
+    }
+  } catch(err) {
+    document.getElementById('regError').textContent = t('sendCodeError');
+    btn.disabled = false;
+  }
 }
 function startChat() {
   token = localStorage.getItem('tinychat_token');
@@ -545,10 +594,10 @@ async function doBuy(pkg) {
       paidArea.style.display = '';
       document.getElementById('buyPaidBtn').onclick = () => confirmPaid(pkg);
     } else {
-      quota = -1; updateQuotaBadge();
-      document.getElementById('buyResultText').textContent = t('buySuccess');
-      document.getElementById('buyResult').style.display = '';
-      setTimeout(closeBuy, 1200);
+      // No payment configured - show error instead of giving free quota
+      tip.textContent = 'Payment not configured. Contact admin.';
+      qrArea.style.display = 'none';
+      document.getElementById('buyOptions').style.display = '';
     }
   } catch(e) { tip.textContent = 'Error: ' + e.message; }
 }
