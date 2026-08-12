@@ -139,7 +139,7 @@ const BAD_WORDS = ['fuck','shit','ass','bitch','damn','crap','dick','piss',
   'slut','whore','nigger','fag','asshole','bastard','cock','cunt',
   'fuckyou','fck','wtf','stfu','cao','sb'];
 
-const APP_VERSION = '20260811-1240';
+const APP_VERSION = '20260812-1030';
 
 const SECRET = new TextEncoder().encode('tinychat-hmac-secret-2026');
 
@@ -290,7 +290,9 @@ export default {
       return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
     }
 
-    if (path === '/' || path === '/index.html') {
+    // SPA routes - all serve the same HTML with JS handling client-side routing
+    if (path === '/' || path === '/index.html' || 
+        path === '/login' || path === '/register') {
       return new Response(HTML, {
         headers: {
           'Content-Type': 'text/html; charset=utf-8',
