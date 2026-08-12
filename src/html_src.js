@@ -44,6 +44,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .random-next{background:#4caf50;color:#fff}
 .random-exit{background:#f44336;color:#fff}
 .quota-badge{background:#ff9800;color:#fff;padding:2px 8px;border-radius:10px;font-size:12px;white-space:nowrap}
+.upgrade-btn{background:#ff5722;color:#fff;border:none;padding:4px 10px;border-radius:10px;font-size:12px;cursor:pointer;white-space:nowrap}
 .msg-area{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px;min-height:0}
 .msg{background:#f0f2f5;padding:7px 11px;border-radius:12px;max-width:75%;word-break:break-word;font-size:14px;line-height:1.4}
 .msg .uname{font-weight:600;color:#1a73e8;font-size:13px;margin-bottom:2px}
@@ -133,6 +134,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <span class="private-mode" id="privateMode" style="display:none"></span>
 <button class="btn rand-btn" id="btnRandom" onclick="startRandom()">&#127922;</button>
 <span class="quota-badge" id="quotaBadge" style="display:none"></span>
+<button class="upgrade-btn" id="btnUpgrade" onclick="openBuy()" data-i18n="upgradeBtn">&#11088; 升级</button>
 <span class="online-count" id="onlineCount"></span>
 </div>
 <div class="random-banner" id="randomBanner" style="display:none">
@@ -208,6 +210,7 @@ const en = {
   buyNote:'Real payment coming soon. Mock mode active.',
   buySuccess:'Upgrade successful! Enjoy unlimited messaging.',
   buyWaiting:'Waiting for admin approval...',
+  upgradeBtn:'Upgrade', quotaUnlimited:'Unlimited', quotaRemaining:'Messages left',
   footerAbout:'About ugochat', footerContact:'Questions? Contact',
   randomFinding:'Finding stranger...', randomPaired:'Paired! Say hi',
   randomNext:'Next', randomExit:'Exit', randomLeft:'Stranger left'
@@ -234,6 +237,7 @@ const zh = {
   buyNote:'支付功能即将上线，当前为模拟模式',
   buySuccess:'升级成功！享受无限消息',
   buyWaiting:'等待管理员审核...',
+  upgradeBtn:'升级', quotaUnlimited:'无限', quotaRemaining:'剩余消息',
   footerAbout:'关于 ugochat', footerContact:'有问题？联系',
   randomFinding:'寻找陌生人...', randomPaired:'配对成功！打个招呼',
   randomNext:'下一个', randomExit:'退出', randomLeft:'陌生人已离开'
@@ -251,6 +255,8 @@ function applyI18n() {
     btn.style.display = username ? '' : 'none';
     if (username) btn.innerHTML = '&#128682; ' + t('logoutBtn');
   }
+  const upBtn = document.getElementById('btnUpgrade');
+  if (upBtn) upBtn.style.display = username ? '' : 'none';
   const navLangEl = document.getElementById('navLang');
   if (navLangEl) navLangEl.textContent = lang === 'zh' ? 'EN' : '\u4E2D';
   if (privateTo) { const h = document.getElementById('privateMode'); if (h) h.textContent = 'DM: ' + privateTo; }
@@ -482,9 +488,11 @@ function applyDmInput() {
 function updateQuotaBadge() {
   const el = document.getElementById('quotaBadge');
   if (!el) return;
-  if (quota < 0) { el.textContent = '\u221E'; el.style.display = ''; }
-  else if (quota <= 10) { el.textContent = quota; el.style.display = ''; }
-  else { el.style.display = 'none'; }
+  if (quota < 0) { el.textContent = '\u221E'; el.title = t('quotaUnlimited') || 'Unlimited'; }
+  else { el.textContent = quota; el.title = (t('quotaRemaining') || 'Messages left') + ': ' + quota; }
+  el.style.display = '';
+  el.style.cursor = 'pointer';
+  el.onclick = () => { if (username) openBuy(); };
 }
 function refreshChatI18n() {
   renderMembers(lastMembers);

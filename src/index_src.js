@@ -798,9 +798,8 @@ export class ChatRoom {
       });
     }
 
-    // 
-    await this.setQuota(payload.username, -1); // -1 = ?    await this.pushQuota(payload.username);
-    return json({ ok: true, quota: -1, mock: true, pkg, label, price, note: 'paid' });
+    // No payment method configured and no QR stored - do NOT auto-grant quota.
+    return json({ ok: false, error: 'Payment not configured. Contact admin.' }, 400);
   }
 
   async handlePayConfirm(request) {
