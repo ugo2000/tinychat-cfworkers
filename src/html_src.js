@@ -874,9 +874,8 @@ async function uploadQR(kind,file){
   if(!file)return;
   const reader=new FileReader();
   reader.onload=async function(e){
-    const base64=e.target.result.split(',')[1];
     try {
-      const r=await fetch('/api/pay-qr?pwd='+encodeURIComponent(PWD),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind,data:base64})});
+      const r=await fetch('/api/pay-qr?pwd='+encodeURIComponent(PWD),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind,dataUrl:e.target.result})});
       if(r.ok){loadQR();alert('Uploaded!');}else{alert('Failed');}
     } catch(e){alert('Error: '+e.message);}
   };
