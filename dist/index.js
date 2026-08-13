@@ -661,7 +661,7 @@ export class ChatRoom {
     try {
       // 娉ㄦ剰锛氶渶瑕佸湪 Resend 鎺у埗鍙伴獙璇佸煙鍚?chathub.asia
       // 鎴栬€呬娇鐢?Resend 鎻愪緵鐨勬祴璇曞湴鍧€ onboarding@resend.dev
-      const fromAddr = 'onboarding@resend.dev';
+      const fromAddr = (this.env.RESEND_FROM || 'noreply@chathub.asia');
       const emailResp = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
