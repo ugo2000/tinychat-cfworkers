@@ -1,12 +1,12 @@
 import { readFileSync, writeFileSync } from 'fs';
+import { execSync } from 'child_process';
 const base = 'C:/Users/Administrator/.qclaw/workspace-agent-7ac59ebd/chat-app-workers/';
 
-// 1. Import html_src.js to get template VALUES
+// 1. Import html_src.js via base64 data URL to get template VALUES
 const htmlSrc = readFileSync(base + 'src/html_src.js', 'utf8');
 const mod = await import('data:text/javascript;base64,' + Buffer.from(htmlSrc).toString('base64'));
 
-// 2. Helper: escape </script> inside script blocks to \x3c/script>
-// This prevents the browser from seeing </script> in a JS string as HTML tag closer
+// 2. Escape </script> inside script blocks so browser doesn't close the HTML tag
 function escapeScriptEnd(html) {
   let result = '';
   let pos = 0;
@@ -24,50 +24,43 @@ function escapeScriptEnd(html) {
   return result;
 }
 
-const templates = {
-  HTML: mod.HTML,
-  ADMIN_HTML: mod.ADMIN_HTML,
-  TEST_HTML: mod.TEST_HTML,
-  ABOUT_HTML: mod.ABOUT_HTML,
-  PRICING_HTML: mod.PRICING_HTML,
-};
-
-console.log('Template values:');
-for (const [k, v] of Object.entries(templates)) {
-  console.log(' ', k, v.length, 'chars');
-}
-
 const fixed = {};
-let totalReplaced = 0;
-for (const [k, v] of Object.entries(templates)) {
-  const before = (v.match(/<\/script>/g) || []).length;
-  const f = escapeScriptEnd(v);
-  const after = (f.match(/<\/script>/g) || []).length;
-  fixed[k] = f;
-  if (before !== after) console.log(' ', k, ': replaced', before - after, 'occurrences');
-  totalReplaced += before - after;
+for (const [k, v] of Object.entries(mod)) {
+  if (typeof v === 'string' && v.includes('<!DOCTYPE html>')) {
+    const before = (v.match(/<\/script>/g) || []).length;
+    fixed[k] = escapeScriptEnd(v);
+    const after = (fixed[k].match(/<\/script>/g) || []).length;
+    if (before !== after) console.log(' ', k, ': escaped', before - after, 'bare </script>');
+  }
 }
-console.log('Total replaced:', totalReplaced);
+console.log('Templates fixed.');
 
-// 3. Read index_src.js, remove import lines (robust: matches import statements regardless of line structure)
-let index = readFileSync(base + 'src/index_src.js', 'utf8');
-index = index.replace(/import\s+[^;]*from\s+['"][^'"]+['"];\s*/g, '');
+// 3. Build HTML constants string (JSON-stringified)
+const htmlBlocks = Object.entries(fixed)
+  .map(([k, v]) => `const ${k} = ${JSON.stringify(v)};`)
+  .join('\n');
 
-// 4. Read wechat_src.js, strip export keywords
+// 4. Read wechat_src.js: strip "export " prefix from function declarations
 let wechat = readFileSync(base + 'src/wechat_src.js', 'utf8');
 wechat = wechat.replace(/export\s+(async\s+)?function\s+/g, '$1function ');
+console.log('Wechat functions loaded.');
 
-// 5. Build final bundle
+// 5. Read index_src.js, remove import lines
+let index = readFileSync(base + 'src/index_src.js', 'utf8');
+index = index.replace(/^import\s+.+?;\s*/gm, '');
+// Remove "export " before function keywords (ChatRoom class export is KEPT)
+index = index.replace(/^export\s+(async\s+)?function\s+/gm, '$1function ');
+// KEEP "export default {" and its closing "}" — old build structure that works
+index = index.replace(/^export\s+default\s*\{/gm, 'export default {');
+// Ensure closing "}" exists at end (source may be missing it)
+if (!index.trim().endsWith('}')) index = index.trim() + '\n};';
+
+// 6. Bundle: Worker code FIRST, then HTML constants at the end
 const bundle = [
   '// ugochat - bundled',
-  'const HTML = ' + JSON.stringify(fixed.HTML) + ';',
-  'const ADMIN_HTML = ' + JSON.stringify(fixed.ADMIN_HTML) + ';',
-  'const TEST_HTML = ' + JSON.stringify(fixed.TEST_HTML) + ';',
-  'const ABOUT_HTML = ' + JSON.stringify(fixed.ABOUT_HTML) + ';',
-  'const PRICING_HTML = ' + JSON.stringify(fixed.PRICING_HTML) + ';',
   '',
   '// ---- WeChat Pay helpers ----',
-  wechat.trim(),
+  wechat,
   '',
   'const wxConfigured = isConfigured;',
   'const wxCtx = buildCtx;',
@@ -75,46 +68,44 @@ const bundle = [
   'const wxDecrypt = decryptResource;',
   'const wxVerify = verifyNotify;',
   '',
-  '// ---- Main worker ----',
-  index.trim(),
+  '// ---- Main worker (fetch handler + DO) ----',
+  index,
+  '',
+  '// ---- HTML template constants (at end for file size, not execution order) ----',
+  htmlBlocks,
   '',
 ].join('\n');
 
 writeFileSync(base + 'dist/index.js', bundle, 'utf8');
 console.log('Bundle written:', bundle.length, 'bytes');
 
-// 6. Validate - check no bare </script> in the bundle's HTML templates
-const jsonParts = bundle.match(/const \w+_HTML = "(?:[^"\\]|\\.)*"/g) || [];
-let bareCount = 0;
-for (const p of jsonParts) {
-  const match = p.match(/^const (\w+_HTML) = (.*)$/);
-  if (!match) continue;
-  const [, name, jsonStr] = match;
+// 7. Validate: no bare </script> in embedded HTML scripts
+const jsonMatches = [...bundle.matchAll(/const \w+ = "([^"]*)";/g)];
+let warnCount = 0;
+for (const m of jsonMatches) {
   try {
-    const decoded = JSON.parse(jsonStr);
-    const scripts = [];
+    const decoded = JSON.parse('"' + m[1] + '"');
+    if (!decoded.includes('<!DOCTYPE')) continue;
     let si = 0;
     while ((si = decoded.indexOf('<script>', si)) >= 0) {
       const ei = decoded.indexOf('</script>', si);
       if (ei < 0) break;
-      scripts.push(decoded.substring(si + 8, ei));
+      const scriptContent = decoded.substring(si + 8, ei);
+      if (/<\/script>/.test(scriptContent)) {
+        console.log('WARN: bare </script> in', m[0].slice(0, 40));
+        warnCount++;
+      }
       si = ei + 9;
-    }
-    const bareInScripts = scripts.join('').match(/<\/script>/g);
-    if (bareInScripts) {
-      console.log('WARN:', name, 'has', bareInScripts.length, 'bare </script> in scripts');
-      bareCount += bareInScripts.length;
     }
   } catch(e) {}
 }
-if (bareCount === 0) console.log('All scripts: no bare </script> - OK');
+if (warnCount === 0) console.log('All scripts: no bare </script> - OK');
 
-// 7. node --check
-import { execSync } from 'child_process';
+// 8. node --check
 try {
   execSync('node --check "' + base + 'dist/index.js"', { stdio: 'pipe' });
   console.log('node --check: PASS');
 } catch (e) {
   console.log('node --check: FAIL');
-  console.log(e.stderr ? e.stderr.toString() : e.message);
+  console.log(e.stderr ? e.stderr.toString().slice(0, 500) : e.message.slice(0, 300));
 }

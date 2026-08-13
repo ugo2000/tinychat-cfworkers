@@ -24,22 +24,31 @@ export default {
     }
 
     if (path === '/api/pay-config') {
+      const body = await request.text();
       const stub = env.CHAT.idFromName('global12');
-      return env.CHAT.get(stub).fetch(request);
+      return env.CHAT.get(stub).fetch(new Request(request.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body }));
     }
 
     if (path === '/api/pay-qr') {
       const pwd = url.searchParams.get('pwd') || '';
       if (pwd !== (env.ADMIN_PASSWORD || ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
+      const body = await request.text();
       const stub = env.CHAT.idFromName('global12');
-      return env.CHAT.get(stub).fetch(request);
+      return env.CHAT.get(stub).fetch(new Request(request.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body }));
     }
 
     if (path === '/api/register' || path === '/api/login' || path === '/api/send-code' ||
         path === '/api/users' || path === '/api/messages' ||
         path === '/api/quota' || path === '/api/buy' || path === '/api/pay-confirm' || path === '/api/pay-pending') {
+      const body = await request.text();
       const stub = env.CHAT.idFromName('global12');
-      return env.CHAT.get(stub).fetch(request);
+      const newReq = new Request(request.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+        duplex: 'half'
+      });
+      return env.CHAT.get(stub).fetch(newReq);
     }
 
     if (path === '/chat') {
@@ -85,14 +94,16 @@ export default {
     if (path === '/admin/pay-pending') {
       const pwd = url.searchParams.get('pwd') || '';
       if (pwd !== (env.ADMIN_PASSWORD || ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
+      const body = await request.text();
       const stub = env.CHAT.idFromName('global12');
-      return env.CHAT.get(stub).fetch(request);
+      return env.CHAT.get(stub).fetch(new Request(request.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body }));
     }
     if (path === '/admin/pay-approve') {
       const pwd = url.searchParams.get('pwd') || '';
       if (pwd !== (env.ADMIN_PASSWORD || ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
+      const body = await request.text();
       const stub = env.CHAT.idFromName('global12');
-      return env.CHAT.get(stub).fetch(request);
+      return env.CHAT.get(stub).fetch(new Request(request.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body }));
     }
     if (path === '/admin/clear-visitors') {
       const pwd = url.searchParams.get('pwd') || '';
