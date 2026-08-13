@@ -96,7 +96,27 @@ export default {
       if (pwd !== (env.ADMIN_PASSWORD || ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
       const body = await request.text();
       const stub = env.CHAT.idFromName('global12');
-      return env.CHAT.get(stub).fetch(new Request(request.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body }));
+      const req = new Request(request.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, duplex: 'half' });
+      return env.CHAT.get(stub).fetch(req);
+    }
+    if (path === '/admin/pending-list') {
+      const pwd = url.searchParams.get('pwd') || '';
+      if (pwd !== (env.ADMIN_PASSWORD || ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
+      const stub = env.CHAT.idFromName('global12');
+      const req = new Request(request.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}', duplex: 'half' });
+      return env.CHAT.get(stub).fetch(req);
+    }
+    if (path === '/api/pay-pending') {
+      // Admin view: return all pending with screenshots (pwd in body)
+      const body = await request.text().catch(() => '{}');
+      let parsed;
+      try { parsed = JSON.parse(body); } catch { parsed = {}; }
+      if (parsed.pwd) {
+        if (parsed.pwd !== (env.ADMIN_PASSWORD || ADMIN_PASSWORD || '')) return json({ error: 'unauthorized' }, 401);
+        const stub = env.CHAT.idFromName('global12');
+        const req = new Request(request.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, duplex: 'half' });
+        return env.CHAT.get(stub).fetch(req);
+      }
     }
     if (path === '/admin/pay-approve') {
       const pwd = url.searchParams.get('pwd') || '';
@@ -227,7 +247,8 @@ export class ChatRoom {
         case '/api/pay-pending':  return await this.handlePayPending(request);
         case '/wxmark':        return await this.handleWxMark(url);
         case '/admin-data':       return await this.handleAdminData();
-        case '/admin/pay-pending': return await this.handlePayPending(request);
+        case '/admin/pending-list': return await this.handleAdminPending();
+        case '/admin/pay-pending': return await this.handleAdminPending();
         case '/admin/pay-approve': return await this.handlePayApprove(request);
         case '/track':       return await this.handleTrack(url);
         case '/clear-visitors': return await this.handleClearVisitors();
@@ -821,13 +842,19 @@ export class ChatRoom {
     if (!payload) return json({ ok: false, error: 'Unauthorized' }, 401);
     const pkg = body.pkg || 'once';
     const pending = await this.state.storage.get('payPending') || [];
-    // ?timestamp
     const existing = pending.findIndex(p => p.username === payload.username && p.pkg === pkg && p.status === 'pending');
-    const entry = { username: payload.username, pkg, ts: Date.now(), status: 'pending' };
+    const entry = { username: payload.username, pkg, ts: Date.now(), status: 'pending', screenshot: body.screenshot || '' };
     if (existing >= 0) pending[existing] = entry;
     else pending.push(entry);
     await this.state.storage.put('payPending', pending);
     return json({ ok: true, pending: true });
+  }
+
+  // Admin view: all pending with screenshots
+  async handleAdminPending() {
+    const pending = await this.state.storage.get('payPending') || [];
+    const all = pending.filter(p => p.status === 'pending');
+    return json({ ok: true, pending: all });
   }
 
   async handlePayPending(request) {

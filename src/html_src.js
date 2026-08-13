@@ -161,7 +161,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="buyQrArea" style="display:none">
 <div id="buyQrTip"></div>
 <img id="buyQrImg" style="display:none">
-<div id="buyPaidBtnArea" style="display:none"><button class="buy-paid-btn" id="buyPaidBtn" onclick="confirmPaid()">I Paid</button></div>
+<div id="buyUploadArea" style="display:none;margin:8px 0">
+<div class="upload-hint">Upload payment screenshot to confirm:</div>
+<input type="file" id="buyScreenshot" accept="image/*" style="font-size:12px">
+<img id="buyScreenshotPreview" style="display:none;max-width:180px;max-height:180px;border:1px solid #ccc;border-radius:6px;margin-top:6px">
+</div>
+<div id="buyPaidBtnArea" style="display:none"><button class="buy-paid-btn" id="buyPaidBtn" data-i18n="paidBtn" onclick="confirmPaid()">I Paid</button></div>
 </div>
 <div id="buyResult" style="display:none;text-align:center;padding:10px 0">
 <div id="buyResultText" style="font-size:15px;color:#2e7d32;font-weight:600"></div>
@@ -209,6 +214,8 @@ const en = {
   pkgYear:'Yearly', lblYear:'per year, unlimited',
   pkgMonth:'Monthly', lblMonth:'per month, unlimited',
   buyNote:'Scan the QR code with Alipay or WeChat to pay. After payment, click "I Paid" and your plan activates after confirmation.',
+  uploadHint:'Upload payment screenshot to confirm:',
+  paidBtn:'I Paid'
   buySuccess:'Upgrade successful! Enjoy unlimited messaging.',
   buyWaiting:'Waiting for admin approval...',
   upgradeBtn:'Upgrade', quotaUnlimited:'Unlimited', quotaRemaining:'Messages left',
@@ -236,6 +243,8 @@ const zh = {
   pkgYear:'年付', lblYear:'每年无限',
   pkgMonth:'月付', lblMonth:'每月无限',
   buyNote:'使用支付宝或微信扫描二维码付款，付款后点"已支付"，审核通过后自动开通',
+  uploadHint:'上传付款截图确认:',
+  paidBtn:'已支付'
   buySuccess:'升级成功！享受无限消息',
   buyWaiting:'等待管理员审核...',
   upgradeBtn:'升级', quotaUnlimited:'无限', quotaRemaining:'剩余消息',
@@ -612,8 +621,7 @@ async function doBuy(pkg) {
         }
       }, 2000);
     } else if (d.personal) {
-      if (d.wechatUrl) {
-        img.src = d.wechatUrl; img.style.display = 'block';
+      img.src = d.wechatUrl; img.style.display = 'block';
         tip.textContent = 'WeChat Pay - scan or save';
       } else if (d.alipayUrl) {
         img.src = d.alipayUrl; img.style.display = 'block';
@@ -621,8 +629,22 @@ async function doBuy(pkg) {
       } else {
         tip.textContent = 'QR code not configured yet.';
       }
-      paidArea.style.display = '';
-      document.getElementById('buyPaidBtn').onclick = () => confirmPaid(pkg);
+      document.getElementById('buyUploadArea').style.display = '';
+      document.getElementById('buyPaidBtnArea').style.display = 'none';
+      const scr = document.getElementById('buyScreenshot');
+      scr.value = '';
+      const preview = document.getElementById('buyScreenshotPreview');
+      preview.src = ''; preview.style.display = 'none';
+      scr.onchange = () => {
+        const file = scr.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+          preview.src = e.target.result; preview.style.display = 'block';
+          document.getElementById('buyPaidBtnArea').style.display = '';
+        };
+        reader.readAsDataURL(file);
+      };
     } else {
       // No payment configured - show error instead of giving free quota
       tip.textContent = 'Payment not configured. Contact admin.';
@@ -632,17 +654,19 @@ async function doBuy(pkg) {
   } catch(e) { tip.textContent = 'Error: ' + e.message; }
 }
 async function confirmPaid(pkg) {
+  const scr = document.getElementById('buyScreenshot');
+  const file = scr && scr.files[0];
+  const screenshot = file ? await new Promise(resolve => {
+    const r = new FileReader(); r.onload = e => resolve(e.target.result); r.readAsDataURL(file);
+  }) : '';
   try {
-    const r = await api('/api/pay-confirm', {pkg, token});
+    const r = await api('/api/pay-confirm', {pkg, token, screenshot});
     const d = await r.json();
-    // Close the payment window immediately, per request
     closeBuy();
     if (d.quota < 0 || d.approved) {
-      // Already approved (e.g. admin pre-approved) -> enjoy now
       quota = -1; updateQuotaBadge();
       addSystem(t('buySuccess'));
     } else {
-      // Waiting for admin approval; poll in the background (window already closed)
       startPayPoll();
       addSystem(t('buyWaiting'));
     }
@@ -883,7 +907,7 @@ async function uploadQR(kind,file){
 }
 async function loadPending(){
   try {
-    const r=await fetch('/api/pay-pending?pwd='+encodeURIComponent(PWD));
+    const r=await fetch('/admin/pending-list?pwd='+encodeURIComponent(PWD),{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
     if(!r.ok)return;
     const d=await r.json();
     const area=document.getElementById('pendingArea');
@@ -893,7 +917,13 @@ async function loadPending(){
       const div=document.createElement('div');
       div.className='pend-item';
       const Q=String.fromCharCode(39);
-      div.innerHTML='<span><b>'+esc(p.username)+'</b> - '+esc(p.pkg||'')+' ('+new Date(p.ts).toLocaleString()+')</span><button onclick="approvePay('+Q+esc(p.username)+Q+','+Q+esc(p.pkg||'')+Q+')">Approve</button>';
+      let screenshotHtml='';
+      if(p.screenshot&&p.screenshot.startsWith('data:image/')){
+        screenshotHtml='<img src="'+esc(p.screenshot)+'" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #ddd;cursor:pointer" onclick="window.open(\''+esc(p.screenshot)+'\',\'_blank\')" title="Click to enlarge">';
+      } else {
+        screenshotHtml='<span style="color:#e53935;font-size:12px">No screenshot</span>';
+      }
+      div.innerHTML='<span><b>'+esc(p.username)+'</b> - '+esc(p.pkg||'')+' ('+new Date(p.ts).toLocaleString()+')</span>'+screenshotHtml+'<button onclick="approvePay('+Q+esc(p.username)+Q+','+Q+esc(p.pkg||'')+Q+')">Approve</button>';
       area.appendChild(div);
     });
   } catch(e){}
