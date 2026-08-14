@@ -556,6 +556,20 @@ function toggleEmojiPanel() {
     p.classList.remove('open');
   }
 }
+
+var pendingEmoji = null;
+var pendingEmojiTitle = null;
+function pickEmoji(svgStr, title) {
+  pendingEmoji = svgStr;
+  pendingEmojiTitle = title;
+  var inp = document.getElementById('msgInput');
+  if (inp) { inp.placeholder = '\u270B ' + title; inp.focus(); }
+}
+function insertEmoji(code) {
+  var inp = document.getElementById('msgInput');
+  if (inp) { inp.placeholder = ''; }
+  pendingEmoji = null; pendingEmojiTitle = null;
+}
 document.addEventListener('click', function(e) {
   var panel = document.getElementById('emojiPanel');
   var btn = document.getElementById('emojiBtn');
@@ -609,8 +623,7 @@ function renderEmojiGrid() {
     item.innerHTML = e.s;
     item.title = e.t;
     item.onclick = function() {
-      var inp = document.getElementById('msgInput');
-      if (inp) { inp.value += ' ' + e.s + ' '; inp.focus(); }
+      pickEmoji(e.s, e.t);
       var panel = document.getElementById('emojiPanel');
       if (panel) panel.classList.remove('open');
     };
@@ -666,8 +679,7 @@ function renderEmojiGrid() {
     item.innerHTML = e.s;
     item.title = e.t;
     item.onclick = function() {
-      var inp = document.getElementById('msgInput');
-      if (inp) { inp.value += ' ' + e.s + ' '; inp.focus(); }
+      pickEmoji(e.s, e.t);
       var panel = document.getElementById('emojiPanel');
       if (panel) panel.classList.remove('open');
     };
@@ -706,9 +718,37 @@ function addMessage(msg) {
   if (msg.type === 'system') cls = 'msg system';
   div.className = cls;
   if (msg.type === 'system') {
-    div.textContent = msg.text || '';
+    if (msg.emojiSvg) {
+    var ei = document.createElement('img');
+    ei.src = 'data:image/svg+xml,' + encodeURIComponent(msg.emojiSvg);
+    ei.style = 'max-width:72px;max-height:72px;border-radius:8px;display:block;margin:2px auto';
+    ei.title = msg.emojiTitle || '';
+    div.style.textAlign = 'center';
+    div.appendChild(ei);
+    if (msg.text) {
+      var sp = document.createElement('span');
+      sp.textContent = msg.text;
+      sp.style.display = 'block';
+      div.appendChild(sp);
+    }
   } else {
-    const from = esc(msg.from || msg.username || '?');
+    div.textContent = msg.text || '';
+  } if (false) { var _fake = msg.content || msg.msg; }
+  } else {
+      if (msg.emojiSvg) {
+    var _ei = document.createElement('img');
+    _ei.src = 'data:image/svg+xml,' + encodeURIComponent(msg.emojiSvg);
+    _ei.style = 'max-width:72px;max-height:72px;border-radius:8px;display:block;margin:2px auto';
+    _ei.title = msg.emojiTitle || '';
+    div.style.textAlign = 'center';
+    div.appendChild(_ei);
+    if (msg.text) {
+      var _sp = document.createElement('span');
+      _sp.textContent = msg.text;
+      _sp.style.cssText = 'display:block;font-size:12px;color:#555;margin-top:2px';
+      div.appendChild(_sp);
+    }
+  const from = esc(msg.from || msg.username || '?');
     const geoTxt = msg.geo ? ' <span class="geo">(' + esc(msg.geo) + ')</span>' : '';
     const lock = msg.private ? ' &#128274;' : '';
     const tsVal = msg.ts || msg.timestamp;
@@ -728,7 +768,15 @@ function sendMsg() {
   if (quota === 0) { openBuy(); return; }
   if (quota > 0) quota--;
   updateQuotaBadge();
-  const msg = { type: 'message', text, ts: Date.now(), geo };
+  var msg = { type: 'message', text: text || '', ts: Date.now(), geo };
+  if (pendingEmoji) {
+    msg.emojiSvg = pendingEmoji;
+    msg.emojiTitle = pendingEmojiTitle || '';
+    msg.text = text || '';
+    pendingEmoji = null; pendingEmojiTitle = null;
+    var inpP = document.getElementById('msgInput');
+    if (inpP) inpP.placeholder = '';
+  }
   if (randomPeer) {
     msg.type = 'random_msg'; msg.to = randomPeer;
   } else if (privateTo) {
