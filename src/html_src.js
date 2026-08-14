@@ -32,6 +32,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .err{color:#d32f2f;font-size:12px;margin-top:4px;min-height:16px;text-align:center}
 .header{background:#1a73e8;color:#fff;padding:10px 14px;display:flex;align-items:center;gap:8px;font-size:13px;flex-shrink:0;flex-wrap:wrap}
 .header .conn-dot{font-size:12px}
+.header .my-name{font-size:12px;color:#1565c0;font-weight:600;padding:2px 8px;background:#e3f2fd;border-radius:10px;margin:0 4px}
 .header .online-count{margin-left:auto;font-size:12px;opacity:.85}
 .chat-header{display:flex;align-items:center;padding:6px 10px;background:#f8f9fa;border-bottom:1px solid #e0e0e0;gap:6px;flex-wrap:wrap;flex-shrink:0}
 .chat-header select,input{padding:5px 8px;border:1px solid #ccc;border-radius:6px;font-size:13px;max-width:140px}
@@ -129,6 +130,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="pageChat" class="page">
 <div class="chat-header">
 <span class="conn-dot" id="connDot">&#128308;</span>
+<span class="my-name" id="myName"></span>
 <select id="privateTo" onchange="onSelectChange()"><option value="" data-i18n="selectPrivate">Public Chat</option></select>
 <div class="dm-target"><input id="dmInput" data-i18n="dmPlaceholder" placeholder="Username"><button id="dmBtn" onclick="applyDmInput()">DM</button></div>
 <span class="private-mode" id="privateMode" style="display:none"></span>
@@ -203,7 +205,7 @@ const en = {
   noAccount:'No account? Register', hasAccount:'Has account? Login',
   passwordMismatch:'Passwords do not match',
   aboutLink:'About ugochat',
-  selectPrivate:'Public Chat', dmPlaceholder:'Username', dmBtn:'DM',
+  selectPrivate:'Public Chat', meLabel:'(me)', dmPlaceholder:'Username', dmBtn:'DM',
   privateHint:'DM: {u}', connected:'Connected', reconnecting:'Reconnecting...',
   sessionExpired:'Session expired, please login again',
   sendPlaceholder:'Type message...', sendBtn:'Send',
@@ -232,7 +234,7 @@ const zh = {
   noAccount:'没有账号？注册', hasAccount:'已有账号？登录',
   passwordMismatch:'两次密码不一致',
   aboutLink:'关于 ugochat',
-  selectPrivate:'公开聊天', dmPlaceholder:'用户名', dmBtn:'私信',
+  selectPrivate:'公开聊天', meLabel:'（我）', dmPlaceholder:'用户名', dmBtn:'私信',
   privateHint:'私信: {u}', connected:'已连接', reconnecting:'重连中...',
   sessionExpired:'会话过期，请重新登录',
   sendPlaceholder:'输入消息...', sendBtn:'发送',
@@ -388,6 +390,7 @@ function connectWS() {
   ws.onopen = () => {
     reconnectAttempts = 0;
     updateConnDot('\uD83D\uDFE2');
+    updateMyName();
   };
   ws.onmessage = evt => { try { handleWSMessage(JSON.parse(evt.data)); } catch(e) {} };
   ws.onclose = () => { if (!manualClose) scheduleReconnect(); updateConnDot('\uD83D\uDD34'); const mi = document.getElementById('msgInput'); if (mi) mi.disabled = true; };
@@ -411,6 +414,7 @@ function handleWSMessage(msg) {
     msg.messages && msg.messages.forEach(m => addMessage(m));
     msg.online && msg.online.forEach(u => addOnlineUser(u));
     updateQuotaBadge();
+    updateMyName();
   } else if (msg.type === 'message') {
     addMessage({...msg, direction: msg.username === username ? 'outgoing' : 'incoming'});
   } else if (msg.type === 'online') {
@@ -463,6 +467,9 @@ function renderMembers(members) {
   const sel = document.getElementById('privateTo');
   if (!sel) return;
   sel.innerHTML = '<option value="" id="optPublic">' + t('selectPrivate') + '</option>';
+  if (username) {
+    const oMe = document.createElement('option'); oMe.value = ''; oMe.textContent = username + ' ' + (t('meLabel') || '(me)'); oMe.disabled = true; sel.appendChild(oMe);
+  }
   members.forEach(m => {
     const nm = typeof m === 'object' ? m.username : m;
     if (nm && nm !== username) {
@@ -506,6 +513,10 @@ function updateQuotaBadge() {
   el.style.display = '';
   el.style.cursor = 'pointer';
   el.onclick = () => { if (username) openBuy(); };
+}
+function updateMyName() {
+  const el = document.getElementById('myName');
+  if (el) el.textContent = username ? (t('meLabel') || '(me)') + ' ' + username : '';
 }
 function refreshChatI18n() {
   renderMembers(lastMembers);
@@ -697,6 +708,7 @@ function doLogout() {
   lastMembers = [];
   document.getElementById('msgArea').innerHTML = '';
   document.getElementById('msgInput').disabled = true;
+  updateMyName();
   showLogin();
 }
 // Init
