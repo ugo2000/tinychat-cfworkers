@@ -215,7 +215,7 @@ const en = {
   pkgMonth:'Monthly', lblMonth:'per month, unlimited',
   buyNote:'Scan the QR code with Alipay or WeChat to pay. After payment, click "I Paid" and your plan activates after confirmation.',
   uploadHint:'Upload payment screenshot to confirm:',
-  paidBtn:'I Paid'
+  paidBtn:'I Paid',
   buySuccess:'Upgrade successful! Enjoy unlimited messaging.',
   buyWaiting:'Waiting for admin approval...',
   upgradeBtn:'Upgrade', quotaUnlimited:'Unlimited', quotaRemaining:'Messages left',
@@ -244,7 +244,7 @@ const zh = {
   pkgMonth:'月付', lblMonth:'每月无限',
   buyNote:'使用支付宝或微信扫描二维码付款，付款后点"已支付"，审核通过后自动开通',
   uploadHint:'上传付款截图确认:',
-  paidBtn:'已支付'
+  paidBtn:'已支付',
   buySuccess:'升级成功！享受无限消息',
   buyWaiting:'等待管理员审核...',
   upgradeBtn:'升级', quotaUnlimited:'无限', quotaRemaining:'剩余消息',
@@ -621,7 +621,8 @@ async function doBuy(pkg) {
         }
       }, 2000);
     } else if (d.personal) {
-      img.src = d.wechatUrl; img.style.display = 'block';
+      if (d.wechatUrl) {
+        img.src = d.wechatUrl; img.style.display = 'block';
         tip.textContent = 'WeChat Pay - scan or save';
       } else if (d.alipayUrl) {
         img.src = d.alipayUrl; img.style.display = 'block';
