@@ -1244,3 +1244,388 @@ function usgLang(){const cur=document.getElementById('content').innerHTML===ZH?'
 </script>
 </body>
 </html>`;
+
+export const SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>https://chathub.asia/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+<url><loc>https://chathub.asia/about</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+<url><loc>https://chathub.asia/pricing</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+<url><loc>https://chathub.asia/features</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+<url><loc>https://chathub.asia/random-chat</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+<url><loc>https://chathub.asia/anonymous-chat</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+<url><loc>https://chathub.asia/online-chat</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+<url><loc>https://chathub.asia/faq</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://chathub.asia/privacy</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
+<url><loc>https://chathub.asia/terms</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
+<url><loc>https://chathub.asia/safety</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
+</urlset>`;
+export const ROBOTS_TXT = `User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /chat
+Sitemap: https://chathub.asia/sitemap.xml`;
+export const FAQ_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ - ugochat Anonymous Chat</title>
+  <meta name="description" content="Frequently asked questions about ugochat anonymous chat platform, messaging quotas, payments, and privacy.">
+  <meta name="keywords" content="faq,help,questions,answers,support,quota,payment,privacy anonymous chat">
+  <meta property="og:title" content="FAQ - ugochat Anonymous Chat">
+  <meta property="og:description" content="Frequently asked questions about ugochat anonymous chat platform, messaging quotas, payments, and privacy.">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://chathub.asia">
+
+<style>
+  body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px;background:#0f172a;color:#e2e8f0;line-height:1.6}
+  h1{color:#60a5fa;margin-bottom:16px}h2{color:#93c5fd;margin-top:32px;margin-bottom:12px}
+  a{color:#60a5fa;text-decoration:none}a:hover{text-decoration:underline}
+  .nav{margin-bottom:32px;padding:16px;background:#1e293b;border-radius:8px;display:flex;flex-wrap:wrap;gap:12px}
+  .nav a{padding:6px 12px;background:#334155;border-radius:4px;color:#e2e8f0}.nav a:hover{background:#475569;text-decoration:none}
+  .card{background:#1e293b;padding:24px;border-radius:12px;margin-bottom:16px}
+  .cta{text-align:center;margin-top:32px}.cta a{display:inline-block;padding:12px 32px;background:#3b82f6;border-radius:8px;font-size:18px}.cta a:hover{background:#2563eb;text-decoration:none}
+  footer{text-align:center;margin-top:48px;padding:24px;color:#64748b;font-size:14px}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="/">Home</a><a href="/about">About</a><a href="/pricing">Pricing</a><a href="/features">Features</a><a href="/safety">Safety</a><a href="/faq">FAQ</a><a href="/privacy">Privacy</a>
+</nav>
+<h1>Frequently Asked Questions</h1>
+<div class="card">
+<h2>How does anonymous chat work?</h2>
+<p>You register with a username and password. No real name, phone, or email verification required (though email is optional for password recovery). Your IP address is logged but not publicly displayed.</p>
+</div>
+<div class="card">
+<h2>How many free messages do I get?</h2>
+<p>Every account starts with 100 free messages. These never expire. When you run out, you can purchase a plan for unlimited messaging.</p>
+</div>
+<div class="card">
+<h2>How does payment work?</h2>
+<p>We support Alipay. After purchase, upload a screenshot of your payment. Admin reviews and approves within minutes. You can also contact us at <a href="mailto:ugo2000@126.com">ugo2000@126.com</a>.</p>
+</div>
+<div class="card">
+<h2>Is my chat private?</h2>
+<p>Messages are stored temporarily for delivery. Group chat messages are not permanently logged. Private messages between users are stored for session continuity. We do not sell or share your data.</p>
+</div>
+<div class="card">
+<h2>What is random chat?</h2>
+<p>Random chat pairs you with a stranger. You can chat anonymously and tap "Next" at any time to find someone new. No awkwardness, no connections — just conversation.</p>
+</div>
+<div class="card">
+<h2>Can I delete my account?</h2>
+<p>Contact us at <a href="mailto:ugo2000@126.com">ugo2000@126.com</a> with your username and we will remove your data within 7 days.</p>
+</div>
+<div class="cta"><a href="/">Start Chatting</a></div>
+<footer>&copy; 2026 ugochat. All rights reserved.</footer>
+</body>
+</html>`;
+export const FEATURES_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Features - ugochat Anonymous Chat</title>
+  <meta name="description" content="Explore ugochat features: anonymous group chat, random stranger matching, private messaging, and more.">
+  <meta name="keywords" content="features,anonymous chat,group chat,random chat,private messaging,free chat">
+  <meta property="og:title" content="Features - ugochat Anonymous Chat">
+  <meta property="og:description" content="Explore ugochat features: anonymous group chat, random stranger matching, private messaging, and more.">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://chathub.asia">
+<style>
+  body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px;background:#0f172a;color:#e2e8f0;line-height:1.6}
+  h1{color:#60a5fa;margin-bottom:16px}h2{color:#93c5fd;margin-top:32px;margin-bottom:12px}
+  a{color:#60a5fa;text-decoration:none}a:hover{text-decoration:underline}
+  .nav{margin-bottom:32px;padding:16px;background:#1e293b;border-radius:8px;display:flex;flex-wrap:wrap;gap:12px}
+  .nav a{padding:6px 12px;background:#334155;border-radius:4px;color:#e2e8f0}.nav a:hover{background:#475569;text-decoration:none}
+  .card{background:#1e293b;padding:24px;border-radius:12px;margin-bottom:16px}
+  .cta{text-align:center;margin-top:32px}.cta a{display:inline-block;padding:12px 32px;background:#3b82f6;border-radius:8px;font-size:18px}.cta a:hover{background:#2563eb;text-decoration:none}
+  footer{text-align:center;margin-top:48px;padding:24px;color:#64748b;font-size:14px}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="/">Home</a><a href="/about">About</a><a href="/pricing">Pricing</a><a href="/features">Features</a><a href="/safety">Safety</a><a href="/faq">FAQ</a><a href="/privacy">Privacy</a>
+</nav>
+<h1>Platform Features</h1>
+<div class="card"><h2>Anonymous Group Chat</h2><p>Join the live group chat room and talk with everyone. No real names, no tracking — just real-time conversation with other users.</p></div>
+<div class="card"><h2>Random Stranger Chat</h2><p>Tap "Random" to be paired with a stranger. Chat anonymously, and tap "Next" anytime to find someone new. Perfect for making new friends worldwide.</p></div>
+<div class="card"><h2>Private Messaging</h2><p>Send direct messages to specific users. Lock icons indicate private conversations. Your messages are end-to-end within the session.</p></div>
+<div class="card"><h2>Free to Start</h2><p>Every account gets 100 free messages. No credit card required. Upgrade only when you want unlimited messaging.</p></div>
+<div class="card"><h2>Simple &amp; Fast</h2><p>No app download needed. Works in any browser on desktop or mobile. WebSocket-powered real-time delivery with automatic reconnection.</p></div>
+<div class="card"><h2>Safe Environment</h2><p>We log IP addresses for safety and moderation. Inappropriate behavior may result in account suspension. See our <a href="/safety">Safety Guide</a> for tips.</p></div>
+<div class="cta"><a href="/">Try It Free</a></div>
+<footer>&copy; 2026 ugochat. All rights reserved.</footer>
+</body>
+</html>`;
+export const ANONYMOUS_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anonymous Chat - ugochat</title>
+  <meta name="description" content="Chat anonymously online with strangers or in group chat. No real name, no phone required. Free to start with 100 messages.">
+  <meta name="keywords" content="anonymous chat,anonymous messaging,chat without registration,free anonymous chat,online chat strangers">
+  <meta property="og:title" content="Anonymous Chat - ugochat">
+  <meta property="og:description" content="Chat anonymously online with strangers or in group chat. No real name, no phone required. Free to start with 100 messages.">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://chathub.asia">
+<style>
+  body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px;background:#0f172a;color:#e2e8f0;line-height:1.6}
+  h1{color:#60a5fa;margin-bottom:16px}h2{color:#93c5fd;margin-top:32px;margin-bottom:12px}
+  a{color:#60a5fa;text-decoration:none}a:hover{text-decoration:underline}
+  .nav{margin-bottom:32px;padding:16px;background:#1e293b;border-radius:8px;display:flex;flex-wrap:wrap;gap:12px}
+  .nav a{padding:6px 12px;background:#334155;border-radius:4px;color:#e2e8f0}.nav a:hover{background:#475569;text-decoration:none}
+  .card{background:#1e293b;padding:24px;border-radius:12px;margin-bottom:16px}
+  .cta{text-align:center;margin-top:32px}.cta a{display:inline-block;padding:12px 32px;background:#3b82f6;border-radius:8px;font-size:18px}.cta a:hover{background:#2563eb;text-decoration:none}
+  footer{text-align:center;margin-top:48px;padding:24px;color:#64748b;font-size:14px}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="/">Home</a><a href="/about">About</a><a href="/pricing">Pricing</a><a href="/features">Features</a><a href="/safety">Safety</a><a href="/faq">FAQ</a><a href="/privacy">Privacy</a>
+</nav>
+<h1>Anonymous Chat</h1>
+<div class="card"><h2>Your Identity Stays Private</h2><p>No real name, no phone number, no email required. Choose any username and start chatting immediately. Your IP is logged for safety, never shared.</p></div>
+<div class="card"><h2>Chat with Strangers</h2><p>Use the Random Chat feature to meet new people from around the world. Each conversation is completely anonymous. Tap "Next" to move on anytime.</p></div>
+<div class="card"><h2>Group Chat Anonymously</h2><p>Join the live group chat room. See usernames but not real identities. Perfect for casual conversation with a community.</p></div>
+<div class="card"><h2>Private Conversations</h2><p>Send private messages to other users you meet in chat. Lock icons show when a conversation is private and between you and the recipient only.</p></div>
+<div class="cta"><a href="/">Start Chatting Anonymously</a></div>
+<footer>&copy; 2026 ugochat. All rights reserved.</footer>
+</body>
+</html>`;
+export const RANDOM_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Random Chat - ugochat</title>
+  <meta name="description" content="Meet and chat with random strangers online. Anonymous, fun, and free. Start with 100 messages and upgrade for unlimited.">
+  <meta name="keywords" content="random chat,stranger chat,random stranger,chat with strangers,meet new people,anonymous chat random">
+  <meta property="og:title" content="Random Chat - ugochat">
+  <meta property="og:description" content="Meet and chat with random strangers online. Anonymous, fun, and free. Start with 100 messages and upgrade for unlimited.">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://chathub.asia">
+<style>
+  body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px;background:#0f172a;color:#e2e8f0;line-height:1.6}
+  h1{color:#60a5fa;margin-bottom:16px}h2{color:#93c5fd;margin-top:32px;margin-bottom:12px}
+  a{color:#60a5fa;text-decoration:none}a:hover{text-decoration:underline}
+  .nav{margin-bottom:32px;padding:16px;background:#1e293b;border-radius:8px;display:flex;flex-wrap:wrap;gap:12px}
+  .nav a{padding:6px 12px;background:#334155;border-radius:4px;color:#e2e8f0}.nav a:hover{background:#475569;text-decoration:none}
+  .card{background:#1e293b;padding:24px;border-radius:12px;margin-bottom:16px}
+  .cta{text-align:center;margin-top:32px}.cta a{display:inline-block;padding:12px 32px;background:#3b82f6;border-radius:8px;font-size:18px}.cta a:hover{background:#2563eb;text-decoration:none}
+  footer{text-align:center;margin-top:48px;padding:24px;color:#64748b;font-size:14px}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="/">Home</a><a href="/about">About</a><a href="/pricing">Pricing</a><a href="/features">Features</a><a href="/safety">Safety</a><a href="/faq">FAQ</a><a href="/privacy">Privacy</a>
+</nav>
+<h1>Random Chat</h1>
+<div class="card"><h2>Meet Strangers Worldwide</h2><p>Our random chat feature pairs you with a stranger anywhere in the world. Say hi, share a laugh, or have a deep conversation — entirely on your terms.</p></div>
+<div class="card"><h2>Easy to Start</h2><p>Just register, tap "Random", and you're connected. No complicated setup, no friend requests — pure spontaneous conversation.</p></div>
+<div class="card"><h2>Next Anytime</h2><p>If the conversation isn't clicking, tap "Next" and instantly connect with someone new. No awkward goodbyes needed.</p></div>
+<div class="card"><h2>Completely Anonymous</h2><p>Neither you nor the stranger reveals any personal information. You see usernames only. Stay safe and have fun.</p></div>
+<div class="cta"><a href="/">Try Random Chat</a></div>
+<footer>&copy; 2026 ugochat. All rights reserved.</footer>
+</body>
+</html>`;
+export const ONLINE_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Chat Room - ugochat</title>
+  <meta name="description" content="Join the live online chat room. Real-time group chat with other online users. Free to start, no download needed.">
+  <meta name="keywords" content="online chat,live chat,online chat room,group chat,real-time chat,web chat">
+  <meta property="og:title" content="Online Chat Room - ugochat">
+  <meta property="og:description" content="Join the live online chat room. Real-time group chat with other online users. Free to start, no download needed.">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://chathub.asia">
+<style>
+  body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px;background:#0f172a;color:#e2e8f0;line-height:1.6}
+  h1{color:#60a5fa;margin-bottom:16px}h2{color:#93c5fd;margin-top:32px;margin-bottom:12px}
+  a{color:#60a5fa;text-decoration:none}a:hover{text-decoration:underline}
+  .nav{margin-bottom:32px;padding:16px;background:#1e293b;border-radius:8px;display:flex;flex-wrap:wrap;gap:12px}
+  .nav a{padding:6px 12px;background:#334155;border-radius:4px;color:#e2e8f0}.nav a:hover{background:#475569;text-decoration:none}
+  .card{background:#1e293b;padding:24px;border-radius:12px;margin-bottom:16px}
+  .cta{text-align:center;margin-top:32px}.cta a{display:inline-block;padding:12px 32px;background:#3b82f6;border-radius:8px;font-size:18px}.cta a:hover{background:#2563eb;text-decoration:none}
+  footer{text-align:center;margin-top:48px;padding:24px;color:#64748b;font-size:14px}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="/">Home</a><a href="/about">About</a><a href="/pricing">Pricing</a><a href="/features">Features</a><a href="/safety">Safety</a><a href="/faq">FAQ</a><a href="/privacy">Privacy</a>
+</nav>
+<h1>Online Chat Room</h1>
+<div class="card"><h2>Real-Time Group Chat</h2><p>Join the live chat room where all online users can participate. Messages appear instantly — no page refresh needed.</p></div>
+<div class="card"><h2>See Who's Online</h2><p>The member list shows all currently online users. Click any username to start a private conversation with them.</p></div>
+<div class="card"><h2>Works Everywhere</h2><p>No app to download. Works in any modern browser on desktop, tablet, or mobile. Real-time updates via WebSocket.</p></div>
+<div class="card"><h2>100 Free Messages</h2><p>Every account starts with 100 free messages. Upgrade to unlimited when you're ready.</p></div>
+<div class="cta"><a href="/">Join the Chat Room</a></div>
+<footer>&copy; 2026 ugochat. All rights reserved.</footer>
+</body>
+</html>`;
+export const PRIVACY_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - ugochat</title>
+  <meta name="description" content="ugochat privacy policy. How we collect, use, and protect your data. Anonymous chat with minimal data collection.">
+  <meta name="keywords" content="privacy,privacy policy,data protection,anonymous chat privacy,personal data">
+  <meta property="og:title" content="Privacy Policy - ugochat">
+  <meta property="og:description" content="ugochat privacy policy. How we collect, use, and protect your data. Anonymous chat with minimal data collection.">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://chathub.asia">
+<style>
+  body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px;background:#0f172a;color:#e2e8f0;line-height:1.6}
+  h1{color:#60a5fa;margin-bottom:16px}h2{color:#93c5fd;margin-top:32px;margin-bottom:12px}
+  a{color:#60a5fa;text-decoration:none}a:hover{text-decoration:underline}
+  .nav{margin-bottom:32px;padding:16px;background:#1e293b;border-radius:8px;display:flex;flex-wrap:wrap;gap:12px}
+  .nav a{padding:6px 12px;background:#334155;border-radius:4px;color:#e2e8f0}.nav a:hover{background:#475569;text-decoration:none}
+  .card{background:#1e293b;padding:24px;border-radius:12px;margin-bottom:16px}
+  .cta{text-align:center;margin-top:32px}.cta a{display:inline-block;padding:12px 32px;background:#3b82f6;border-radius:8px;font-size:18px}.cta a:hover{background:#2563eb;text-decoration:none}
+  footer{text-align:center;margin-top:48px;padding:24px;color:#64748b;font-size:14px}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="/">Home</a><a href="/about">About</a><a href="/pricing">Pricing</a><a href="/features">Features</a><a href="/safety">Safety</a><a href="/faq">FAQ</a><a href="/privacy">Privacy</a>
+</nav>
+<h1>Privacy Policy</h1>
+<div class="card"><h2>Information We Collect</h2>
+<p><strong>Account Information:</strong> Username, password (hashed), and optional email address.</p>
+<p><strong>IP Address:</strong> Logged on registration and login for security and abuse prevention.</p>
+<p><strong>Messages:</strong> Group chat and private messages are stored temporarily for delivery. Private messages may be retained longer for session continuity.</p>
+</div>
+<div class="card"><h2>How We Use Information</h2>
+<p>IP addresses are used for security, moderation, and abuse prevention. Email (if provided) is used only for account recovery and verification codes. We do not sell, trade, or rent your personal information.</p>
+</div>
+<div class="card"><h2>Cookies</h2>
+<p>We use localStorage in your browser to store your username, language preference, and session token. No third-party tracking cookies are used.</p>
+</div>
+<div class="card"><h2>Data Retention</h2>
+<p>Messages are stored on our servers. Group chat messages may be purged periodically. Private message retention depends on activity. Account deletion requests are honored within 7 days.</p>
+</div>
+<div class="card"><h2>Contact</h2>
+<p>For privacy concerns, contact us at <a href="mailto:ugo2000@126.com">ugo2000@126.com</a>.</p>
+</div>
+<div class="cta"><a href="/">Back to Chat</a></div>
+<footer>&copy; 2026 ugochat. All rights reserved.</footer>
+</body>
+</html>`;
+export const TERMS_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service - ugochat</title>
+  <meta name="description" content="Terms of service for ugochat anonymous chat platform. User responsibilities, prohibited conduct, and limitations.">
+  <meta name="keywords" content="terms of service,terms,conditions,user agreement,chat rules">
+  <meta property="og:title" content="Terms of Service - ugochat">
+  <meta property="og:description" content="Terms of service for ugochat anonymous chat platform. User responsibilities, prohibited conduct, and limitations.">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://chathub.asia">
+<style>
+  body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px;background:#0f172a;color:#e2e8f0;line-height:1.6}
+  h1{color:#60a5fa;margin-bottom:16px}h2{color:#93c5fd;margin-top:32px;margin-bottom:12px}
+  a{color:#60a5fa;text-decoration:none}a:hover{text-decoration:underline}
+  .nav{margin-bottom:32px;padding:16px;background:#1e293b;border-radius:8px;display:flex;flex-wrap:wrap;gap:12px}
+  .nav a{padding:6px 12px;background:#334155;border-radius:4px;color:#e2e8f0}.nav a:hover{background:#475569;text-decoration:none}
+  .card{background:#1e293b;padding:24px;border-radius:12px;margin-bottom:16px}
+  .cta{text-align:center;margin-top:32px}.cta a{display:inline-block;padding:12px 32px;background:#3b82f6;border-radius:8px;font-size:18px}.cta a:hover{background:#2563eb;text-decoration:none}
+  footer{text-align:center;margin-top:48px;padding:24px;color:#64748b;font-size:14px}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="/">Home</a><a href="/about">About</a><a href="/pricing">Pricing</a><a href="/features">Features</a><a href="/safety">Safety</a><a href="/faq">FAQ</a><a href="/privacy">Privacy</a>
+</nav>
+<h1>Terms of Service</h1>
+<div class="card"><h2>Acceptance of Terms</h2>
+<p>By using ugochat, you agree to these terms. If you do not agree, do not use the service.</p>
+</div>
+<div class="card"><h2>User Conduct</h2>
+<p>You agree not to use ugochat for:</p>
+<ul style="color:#cbd5e1;padding-left:20px">
+<li>Harassment, threats, or intimidation of other users</li>
+<li>Distribution of illegal, harmful, or offensive content</li>
+<li>Impersonation of other people or entities</li>
+<li>Spam, automated bulk messages, or commercial solicitation</li>
+<li>Attempting to gain unauthorized access to other accounts or systems</li>
+</ul>
+</div>
+<div class="card"><h2>Account Responsibility</h2>
+<p>You are responsible for keeping your password secure. You are responsible for all activity under your account. We may suspend or terminate accounts that violate these terms.</p>
+</div>
+<div class="card"><h2>Service Availability</h2>
+<p>ugochat is provided "as is" without warranties of any kind. We do not guarantee uninterrupted service. We reserve the right to modify or discontinue the service at any time.</p>
+</div>
+<div class="card"><h2>Payment &amp; Refunds</h2>
+<p>Upgrades are non-refundable. Once a payment is approved and activated, your account is upgraded. Contact us at <a href="mailto:ugo2000@126.com">ugo2000@126.com</a> for billing disputes.</p>
+</div>
+<div class="card"><h2>Contact</h2>
+<p>Questions about these terms? Email <a href="mailto:ugo2000@126.com">ugo2000@126.com</a>.</p>
+</div>
+<div class="cta"><a href="/">Back to Chat</a></div>
+<footer>&copy; 2026 ugochat. All rights reserved.</footer>
+</body>
+</html>`;
+export const SAFETY_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Safety Guide - ugochat Anonymous Chat</title>
+  <meta name="description" content="Stay safe on ugochat: tips for anonymous chatting, avoiding scams, protecting your privacy, and reporting issues.">
+  <meta name="keywords" content="safety,online safety,chat safety,avoid scams,protect privacy,anonymous chat tips">
+  <meta property="og:title" content="Safety Guide - ugochat Anonymous Chat">
+  <meta property="og:description" content="Stay safe on ugochat: tips for anonymous chatting, avoiding scams, protecting your privacy, and reporting issues.">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://chathub.asia">
+<style>
+  body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px;background:#0f172a;color:#e2e8f0;line-height:1.6}
+  h1{color:#60a5fa;margin-bottom:16px}h2{color:#93c5fd;margin-top:32px;margin-bottom:12px}
+  a{color:#60a5fa;text-decoration:none}a:hover{text-decoration:underline}
+  .nav{margin-bottom:32px;padding:16px;background:#1e293b;border-radius:8px;display:flex;flex-wrap:wrap;gap:12px}
+  .nav a{padding:6px 12px;background:#334155;border-radius:4px;color:#e2e8f0}.nav a:hover{background:#475569;text-decoration:none}
+  .card{background:#1e293b;padding:24px;border-radius:12px;margin-bottom:16px}
+  .cta{text-align:center;margin-top:32px}.cta a{display:inline-block;padding:12px 32px;background:#3b82f6;border-radius:8px;font-size:18px}.cta a:hover{background:#2563eb;text-decoration:none}
+  footer{text-align:center;margin-top:48px;padding:24px;color:#64748b;font-size:14px}
+
+.card{margin-bottom:16px}.tip-card{margin-bottom:12px;padding:16px;border-radius:8px}.green{background:#064e3b;border-left:4px solid #10b981}.red{background:#7f1d1d;border-left:4px solid #ef4444}.yellow{background:#78350f;border-left:4px solid #f59e0b}</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="/">Home</a><a href="/about">About</a><a href="/pricing">Pricing</a><a href="/features">Features</a><a href="/safety">Safety</a><a href="/faq">FAQ</a><a href="/privacy">Privacy</a>
+</nav>
+<h1>Safety Guide</h1>
+<p>Anonymous chat is fun, but staying safe online is important. Here are our tips:</p>
+<div class="card green"><h2>DO: Keep It Anonymous</h2><p>Never share your real name, phone number, home address, workplace, school name, or social media handles. Your anonymity is your protection.</p></div>
+<div class="card green"><h2>DO: Use a Unique Username</h2><p>Choose a username that doesn't reveal your identity. Don't use your real name, birth year, or anything that could identify you in real life.</p></div>
+<div class="card green"><h2>DO: Trust Your Instincts</h2><p>If a conversation feels uncomfortable, end it. Click "Next" in random chat, or close the private message. Your comfort is more important than politeness.</p></div>
+<div class="card red"><h2>DON'T: Click Unknown Links</h2><p>Never click links shared by strangers. They may lead to phishing sites that steal your credentials or malware that infects your device.</p></div>
+<div class="card red"><h2>DON'T: Send Money or Gifts</h2><p>No legitimate person you meet online should ever ask you for money, gift cards, or cryptocurrency. This is always a scam.</p></div>
+<div class="card yellow"><h2>CAUTION: Photos and Video</h2><p>Be very careful about sending photos or enabling camera with strangers. Once an image is shared, you lose control over it.</p></div>
+<div class="card"><h2>Reporting Issues</h2>
+<p>If you encounter someone violating these guidelines or making you feel unsafe:</p>
+<ul style="color:#cbd5e1;padding-left:20px">
+<li>Immediately leave the conversation</li>
+<li>If you believe illegal activity is occurring, report it to local law enforcement</li>
+<li>For urgent matters, contact us at <a href="mailto:ugo2000@126.com">ugo2000@126.com</a></li>
+</ul>
+</div>
+<div class="cta"><a href="/">Start Chatting Safely</a></div>
+<footer>&copy; 2026 ugochat. All rights reserved.</footer>
+</body>
+</html>`;

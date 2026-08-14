@@ -1,5 +1,5 @@
 // ugochat - Cloudflare Workers + Durable Objects
-import HTML, { ADMIN_HTML, TEST_HTML, ABOUT_HTML, PRICING_HTML } from './html.js';
+import HTML, { ADMIN_HTML, TEST_HTML, ABOUT_HTML, PRICING_HTML, FAQ_HTML, FEATURES_HTML, ANONYMOUS_HTML, RANDOM_HTML, ONLINE_HTML, PRIVACY_HTML, TERMS_HTML, SAFETY_HTML, SITEMAP_XML, ROBOTS_TXT } from './html.js';
 import { isConfigured as wxConfigured, buildCtx as wxCtx, wechatUnifiedOrder as wxOrder, decryptResource as wxDecrypt, verifyNotify as wxVerify } from './wechat.js';
 
 const BAD_WORDS = ['fuck','shit','ass','bitch','damn','crap','dick','piss',
@@ -170,6 +170,46 @@ export default {
           'Expires': '0'
         }
       });
+    }
+
+    if (path === '/faq') {
+      return new Response(FAQ_HTML, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+    }
+
+    if (path === '/features') {
+      return new Response(FEATURES_HTML, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+    }
+
+    if (path === '/anonymous-chat') {
+      return new Response(ANONYMOUS_HTML, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+    }
+
+    if (path === '/random-chat') {
+      return new Response(RANDOM_HTML, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+    }
+
+    if (path === '/online-chat') {
+      return new Response(ONLINE_HTML, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+    }
+
+    if (path === '/privacy') {
+      return new Response(PRIVACY_HTML, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+    }
+
+    if (path === '/terms') {
+      return new Response(TERMS_HTML, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+    }
+
+    if (path === '/safety') {
+      return new Response(SAFETY_HTML, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+    }
+
+    if (path === '/sitemap.xml') {
+      return new Response(SITEMAP_XML, { headers: { 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'max-age=86400' } });
+    }
+
+    if (path === '/robots.txt') {
+      return new Response(ROBOTS_TXT, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'max-age=86400' } });
     }
 
     if (path === '/admin') {
