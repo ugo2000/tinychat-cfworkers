@@ -56,6 +56,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .msg.incoming{background:#f0f2f5;align-self:flex-start}
 .msg.private{background:#fff8e1;border:1px solid #ffe082}
 .msg.system{background:#fce4ec;color:#c62828;max-width:90%;text-align:center;font-size:13px}
+.emoji-btn{background:none;border:none;cursor:pointer;font-size:17px;padding:1px 3px;vertical-align:middle}.emoji-panel{display:none;position:absolute;bottom:50px;left:6px;background:#fff;border:1px solid #ddd;border-radius:12px;padding:10px 8px 6px;z-index:200;box-shadow:0 4px 16px rgba(0,0,0,.18);min-width:280px}.emoji-panel.open{display:block}.emoji-grid{display:flex;flex-wrap:wrap;gap:5px;max-width:264px}.emoji-item{width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;font-size:22px;transition:background .12s}.emoji-item:hover{background:#e8f0fe}.chat-emoji{width:22px;height:22px;vertical-align:middle;margin:0 1px}
 .input-bar{display:flex;gap:6px;padding:8px 10px;border-top:1px solid #e0e0e0;flex-shrink:0;align-items:center;flex-wrap:wrap}
 .input-bar input{flex:1;padding:9px 12px;border:1px solid #ddd;border-radius:20px;outline:none;font-size:14px;min-width:0}
 .input-bar input:focus{border-color:#1a73e8}
@@ -149,7 +150,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="msg-area" id="msgArea"></div>
 <div class="input-bar">
 <input id="msgInput" disabled placeholder="..." onkeydown="if(event.key==='Enter'&&!event.shiftKey)sendMsg()">
-<button onclick="sendMsg()" id="sendBtn">&#10148;</button>
+<button class="emoji-btn" id="emojiBtn" onclick="toggleEmojiPanel()">&#128515;</button>
+<div class="emoji-panel" id="emojiPanel"><div class="emoji-grid" id="emojiGrid"></div></div><button onclick="sendMsg()" id="sendBtn">&#10148;</button>
 <button class="rand-btn" id="randBtn" onclick="startRandom()">&#127922;</button>
 </div>
 </div>
@@ -544,6 +546,63 @@ function updateQuotaBadge() {
   el.style.display = '';
   el.style.cursor = 'pointer';
   el.onclick = () => { if (username) openBuy(); };
+}
+function toggleEmojiPanel() {
+  const p = document.getElementById('emojiPanel');
+  if (!p.classList.contains('open')) {
+    p.classList.add('open');
+    renderEmojiGrid();
+  } else {
+    p.classList.remove('open');
+  }
+}
+document.addEventListener('click', function(e) {
+  var panel = document.getElementById('emojiPanel');
+  var btn = document.getElementById('emojiBtn');
+  if (panel && btn && !panel.contains(e.target) && !btn.contains(e.target)) {
+    panel.classList.remove('open');
+  }
+});
+function renderEmojiGrid() {
+  var g = document.getElementById('emojiGrid');
+  if (!g || g.children.length > 0) return;
+  var emojis = [
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#FFD93D"/><circle cx="12" cy="14" r="2.5" fill="#333"/><circle cx="24" cy="14" r="2.5" fill="#333"/><path d="M10 22 Q18 30 26 22" stroke="#333" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>', t:'Happy'},
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#FFD93D"/><circle cx="12" cy="14" r="2.5" fill="#333"/><circle cx="24" cy="14" r="2.5" fill="#333"/><path d="M10 26 Q18 19 26 26" stroke="#333" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>', t:'Sad'},
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#FFD93D"/><circle cx="12" cy="13" r="2.5" fill="#333"/><circle cx="24" cy="13" r="2.5" fill="#333"/><path d="M11 20 Q18 25 25 20" stroke="#333" stroke-width="2" fill="#ff6b6b" stroke-linecap="round"/><ellipse cx="18" cy="29" rx="8" ry="4" fill="#ff6b6b" opacity=".5"/></svg>', t:'Kiss'},
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#FFD93D"/><circle cx="12" cy="14" r="2.5" fill="#333"/><circle cx="24" cy="14" r="2.5" fill="#333"/><ellipse cx="18" cy="23" rx="6" ry="4" fill="#333"/></svg>', t:'Wow'},
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#FFD93D"/><ellipse cx="12" cy="14" rx="4" ry="3" fill="#333"/><ellipse cx="24" cy="14" rx="4" ry="3" fill="#333"/><ellipse cx="18" cy="24" rx="7" ry="4.5" fill="#333"/></svg>', t:'Angry'},
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#FFD93D"/><line x1="8" y1="11" x2="14" y2="14" stroke="#333" stroke-width="2.5" stroke-linecap="round"/><line x1="28" y1="11" x2="22" y2="14" stroke="#333" stroke-width="2.5" stroke-linecap="round"/><circle cx="12" cy="15" r="2" fill="#333"/><circle cx="24" cy="15" r="2" fill="#333"/><path d="M12 25 Q18 21 24 25" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/></svg>', t:'Evil'},
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#FFD93D"/><circle cx="12" cy="15" r="3" fill="#333"/><circle cx="24" cy="15" r="3" fill="#333"/><circle cx="13" cy="14" r="1" fill="#fff"/><circle cx="25" cy="14" r="1" fill="#fff"/><path d="M11 23 Q18 28 25 23" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/></svg>', t:'Love'},
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#FFD93D"/><path d="M11 13 L15 13 L18 9" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 13 L21 13 L18 9" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="18" r="2.5" fill="#333"/><circle cx="24" cy="18" r="2.5" fill="#333"/><path d="M12 25 Q18 22 24 25" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/></svg>', t:'Cool'},
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#FFD93D"/><path d="M8 12 Q12 8 16 12" stroke="#333" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 12 Q24 8 28 12" stroke="#333" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="12" cy="17" r="2" fill="#333"/><circle cx="24" cy="17" r="2" fill="#333"/><ellipse cx="18" cy="25" rx="4" ry="3" fill="#ff6b6b"/></svg>', t:'Surprised'},
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#FFD93D"/><circle cx="12" cy="14" r="2.5" fill="#333"/><circle cx="24" cy="14" r="2.5" fill="#333"/><line x1="10" y1="21" x2="26" y2="21" stroke="#333" stroke-width="2.5" stroke-linecap="round"/></svg>', t:'Soso'},
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#FFD93D"/><path d="M10 14 Q12 11 14 14" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M22 14 Q24 11 26 14" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="12" cy="17" r="2" fill="#333"/><circle cx="24" cy="17" r="2" fill="#333"/><path d="M9 23 Q18 29 27 23" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="7" cy="17" r="3" fill="#ffb3c1" opacity=".7"/><circle cx="29" cy="17" r="3" fill="#ffb3c1" opacity=".7"/></svg>', t:'Shy'},
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#FF6B6B"/><circle cx="12" cy="14" r="2.5" fill="#fff"/><circle cx="24" cy="14" r="2.5" fill="#fff"/><circle cx="12" cy="14" r="1.5" fill="#333"/><circle cx="24" cy="14" r="1.5" fill="#333"/><ellipse cx="18" cy="24" rx="6" ry="3.5" fill="#fff"/></svg>', t:'Dead'},
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#FFD93D"/><circle cx="12" cy="14" r="2.5" fill="#333"/><circle cx="24" cy="14" r="2.5" fill="#333"/><path d="M8 21 Q18 32 28 21" stroke="#333" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M14 25 Q18 29 22 25" stroke="#333" stroke-width="1.5" fill="#ff6b6b" stroke-linecap="round"/></svg>', t:'Laugh'},
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#AED581"/><circle cx="12" cy="14" r="2.5" fill="#333"/><circle cx="24" cy="14" r="2.5" fill="#333"/><path d="M11 23 Q18 19 25 23" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M10 9 Q12 5 15 9" stroke="#AED581" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M21 9 Q24 5 27 9" stroke="#AED581" stroke-width="3" fill="none" stroke-linecap="round"/></svg>', t:'Proud'},
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#FFD93D"/><path d="M10 16 Q18 16 26 16" stroke="#333" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="12" cy="13" r="2.5" fill="#333"/><circle cx="24" cy="13" r="2.5" fill="#333"/><path d="M8 8 L14 11" stroke="#FFD93D" stroke-width="3" stroke-linecap="round"/><path d="M28 8 L22 11" stroke="#FFD93D" stroke-width="3" stroke-linecap="round"/></svg>', t:'Sleep'},
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#90CAF9"/><circle cx="18" cy="18" r="10" fill="none" stroke="#fff" stroke-width="1.5"/><circle cx="22" cy="15" r="2.5" fill="#333"/><circle cx="15" cy="18" r="2.5" fill="#333"/><circle cx="22" cy="15" r="1" fill="#fff"/><path d="M9 9 L12 6" stroke="#FFD93D" stroke-width="2" stroke-linecap="round"/><path d="M9 6 L12 9" stroke="#FFD93D" stroke-width="2" stroke-linecap="round"/></svg>', t:'Dizzy'},
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#E8DAEF"/><path d="M12 12 L15 15 L12 18" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 12 L21 15 L24 18" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 25 Q18 22 24 25" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/></svg>', t:'Skeptical'},
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#FFCC80"/><circle cx="12" cy="14" r="2.5" fill="#333"/><circle cx="24" cy="14" r="2.5" fill="#333"/><path d="M11 22 Q18 28 25 22" stroke="#333" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="7" cy="22" r="3" fill="#FFCC80"/><circle cx="29" cy="22" r="3" fill="#FFCC80"/></svg>', t:'Speechless'},
+  ];
+  emojis.forEach(function(e) {
+    var item = document.createElement('div');
+    item.className = 'emoji-item';
+    item.innerHTML = e.s;
+    item.title = e.t;
+    item.onclick = function() {
+      var inp = document.getElementById('msgInput');
+      if (inp) { inp.value += ' ' + e.s + ' '; inp.focus(); }
+      var panel = document.getElementById('emojiPanel');
+      if (panel) panel.classList.remove('open');
+    };
+    g.appendChild(item);
+  });
+}
+function insertEmoji(code) {
+  var inp = document.getElementById('msgInput');
+  if (inp) { inp.value += ' ' + code + ' '; inp.focus(); }
 }
 function updateMyName() {
   const el = document.getElementById('myName');
