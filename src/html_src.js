@@ -567,6 +567,80 @@ function renderEmojiGrid() {
   var g = document.getElementById('emojiGrid');
   if (!g || g.children.length > 0) return;
   var emojis = [
+    // 1. Burger Shopping - 汉堡戴墨镜逛街
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="22" width="28" height="8" rx="3" fill="#E8A020"/><rect x="6" y="20" width="24" height="3" rx="1" fill="#5D9C3F"/><ellipse cx="18" cy="18" rx="12" ry="4" fill="#FFEFD5"/><rect x="4" y="10" width="28" height="5" rx="2" fill="#E8A020"/><ellipse cx="18" cy="9" rx="12" ry="4" fill="#F4C430"/><ellipse cx="10" cy="9" rx="5" ry="3" fill="#E8A020"/><circle cx="12" cy="6" r="4" fill="#333"/><circle cx="24" cy="6" r="4" fill="#333"/><circle cx="12" cy="5" r="2" fill="#666"/><circle cx="24" cy="5" r="2" fill="#666"/><line x1="4" y1="9" x2="7" y2="7" stroke="#333" stroke-width="2"/><line x1="32" y1="9" x2="29" y2="7" stroke="#333" stroke-width="2"/><line x1="4" y1="27" x2="4" y2="33" stroke="#E8A020" stroke-width="3"/><line x1="32" y1="27" x2="32" y2="33" stroke="#E8A020" stroke-width="3"/><line x1="10" y1="30" x2="8" y2="34" stroke="#E8A020" stroke-width="3"/><line x1="26" y1="30" x2="28" y2="34" stroke="#E8A020" stroke-width="3"/></svg>', t:'Burger Shopping'},
+
+    // 2. Octopus Noodles - 章鱼炒面
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><ellipse cx="18" cy="12" rx="9" ry="7" fill="#E74C3C"/><circle cx="14" cy="11" r="2.5" fill="#fff"/><circle cx="22" cy="11" r="2.5" fill="#fff"/><circle cx="14" cy="11" r="1.2" fill="#333"/><circle cx="22" cy="11" r="1.2" fill="#333"/><path d="M15 15 Q18 17 21 15" stroke="#333" stroke-width="1.5" fill="none"/><line x1="10" y1="18" x2="8" y2="23" stroke="#E74C3C" stroke-width="3" stroke-linecap="round"/><line x1="14" y1="18" x2="13" y2="24" stroke="#E74C3C" stroke-width="3" stroke-linecap="round"/><line x1="18" y1="19" x2="18" y2="25" stroke="#E74C3C" stroke-width="3" stroke-linecap="round"/><line x1="22" y1="18" x2="23" y2="24" stroke="#E74C3C" stroke-width="3" stroke-linecap="round"/><line x1="26" y1="18" x2="28" y2="23" stroke="#E74C3C" stroke-width="3" stroke-linecap="round"/><line x1="8" y1="24" x2="10" y2="26" stroke="#E74C3C" stroke-width="2" stroke-linecap="round"/><line x1="13" y1="25" x2="11" y2="27" stroke="#E74C3C" stroke-width="2" stroke-linecap="round"/><line x1="23" y1="25" x2="25" y2="27" stroke="#E74C3C" stroke-width="2" stroke-linecap="round"/><line x1="28" y1="24" x2="26" y2="26" stroke="#E74C3C" stroke-width="2" stroke-linecap="round"/><rect x="3" y="29" width="30" height="4" rx="2" fill="#F4D03F"/><path d="M5 29 Q8 26 11 29 Q14 32 17 29 Q20 26 23 29 Q26 32 29 29" stroke="#F4D03F" stroke-width="2" fill="none"/></svg>', t:'Octopus Noodles'},
+
+    // 3. Pineapple Vacation - 菠萝度假
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><ellipse cx="18" cy="21" rx="9" ry="11" fill="#F4D03F"/><path d="M9 18 L9 28 M13 16 L13 29 M17 15 L17 30 M21 15 L21 30 M25 16 L25 29 M27 18 L27 28" stroke="#E8A020" stroke-width="1.5"/><path d="M9 18 Q18 21 27 18 M9 22 Q18 25 27 22 M9 26 Q18 29 27 26" stroke="#E8A020" stroke-width="1.5" fill="none"/><path d="M14 10 Q18 2 22 10 Q25 4 26 10 Q28 5 27 11 Q30 8 28 13" stroke="#27AE60" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="12" cy="21" r="3.5" fill="#333"/><circle cx="24" cy="21" r="3.5" fill="#333"/><circle cx="13" cy="20" r="1.5" fill="#666"/><circle cx="25" cy="20" r="1.5" fill="#666"/><path d="M13 27 Q18 31 23 27" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M5 14 Q7 10 10 14" stroke="#27AE60" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M26 14 Q29 10 31 14" stroke="#27AE60" stroke-width="2" fill="none" stroke-linecap="round"/></svg>', t:'Pineapple Vacation'},
+
+    // 4. Crying Cloud - 哭泣云
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><ellipse cx="22" cy="14" rx="9" ry="7" fill="#D5E8F5"/><circle cx="14" cy="16" r="5" fill="#D5E8F5"/><circle cx="18" cy="12" r="6" fill="#D5E8F5"/><circle cx="26" cy="15" r="4" fill="#D5E8F5"/><circle cx="13" cy="13" r="2" fill="#333"/><circle cx="17" cy="13" r="2" fill="#333"/><circle cx="13" cy="12.5" r="0.8" fill="#fff"/><circle cx="17" cy="12.5" r="0.8" fill="#fff"/><path d="M13 17 Q15 15.5 17 17" stroke="#333" stroke-width="1.5" fill="none" stroke-linecap="round"/><ellipse cx="11" cy="18" rx="1.5" ry="2.5" fill="#5DADE2"/><ellipse cx="16" cy="20" rx="1" ry="2" fill="#5DADE2"/><path d="M8 21 Q9 24 11 21 Q13 24 14 21" stroke="#5DADE2" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M3 22 Q5 26 7 22 Q9 26 11 22" stroke="#5DADE2" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>', t:'Crying Cloud'},
+
+    // 5. Angry Cloud - 愤怒云
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><ellipse cx="22" cy="14" rx="9" ry="7" fill="#95A5A6"/><circle cx="14" cy="16" r="5" fill="#95A5A6"/><circle cx="18" cy="12" r="6" fill="#95A5A6"/><circle cx="26" cy="15" r="4" fill="#95A5A6"/><line x1="10" y1="12" x2="14" y2="14" stroke="#333" stroke-width="2.5" stroke-linecap="round"/><line x1="22" y1="12" x2="26" y2="14" stroke="#333" stroke-width="2.5" stroke-linecap="round"/><circle cx="12" cy="15" r="2" fill="#333"/><circle cx="18" cy="15" r="2" fill="#333"/><path d="M12 19 Q15 17 18 19" stroke="#333" stroke-width="1.5" fill="none" stroke-linecap="round"/><line x1="6" y1="22" x2="10" y2="28" stroke="#F1C40F" stroke-width="2.5" stroke-linecap="round"/><line x1="6" y1="28" x2="10" y2="22" stroke="#F1C40F" stroke-width="2.5" stroke-linecap="round"/><line x1="10" y1="24" x2="12" y2="26" stroke="#F1C40F" stroke-width="2.5" stroke-linecap="round"/><line x1="28" y1="22" x2="32" y2="28" stroke="#F1C40F" stroke-width="2.5" stroke-linecap="round"/><line x1="28" y1="28" x2="32" y2="22" stroke="#F1C40F" stroke-width="2.5" stroke-linecap="round"/><line x1="30" y1="24" x2="28" y2="26" stroke="#F1C40F" stroke-width="2.5" stroke-linecap="round"/><line x1="13" y1="24" x2="14" y2="30" stroke="#F1C40F" stroke-width="2" stroke-linecap="round"/><line x1="13" y1="30" x2="14" y2="24" stroke="#F1C40F" stroke-width="2" stroke-linecap="round"/></svg>', t:'Angry Cloud'},
+
+    // 6. Sleeping Sun - 太阳睡觉
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><line x1="4" y1="12" x2="9" y2="12" stroke="#F39C12" stroke-width="3" stroke-linecap="round"/><line x1="27" y1="12" x2="32" y2="12" stroke="#F39C12" stroke-width="3" stroke-linecap="round"/><line x1="18" y1="2" x2="18" y2="6" stroke="#F39C12" stroke-width="3" stroke-linecap="round"/><line x1="8" y1="5" x2="11" y2="8" stroke="#F39C12" stroke-width="3" stroke-linecap="round"/><line x1="25" y1="5" x2="28" y2="8" stroke="#F39C12" stroke-width="3" stroke-linecap="round"/><circle cx="18" cy="18" r="11" fill="#F4D03F"/><path d="M11 17 Q13 14 15 17" stroke="#333" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M21 17 Q23 14 25 17" stroke="#333" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M13 22 Q18 19 23 22" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M14 23 Q18 25 22 23" stroke="#333" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M3 27 Q5 24 7 27" stroke="#7F8C8D" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M4 30 Q6 27 8 30" stroke="#7F8C8D" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M2 33 Q4 30 6 33" stroke="#7F8C8D" stroke-width="2" fill="none" stroke-linecap="round"/><rect x="28" y="20" width="5" height="7" rx="1" fill="#95A5A6"/><line x1="29" y1="22" x2="29" y2="26" stroke="#F39C12" stroke-width="1.5"/><line x1="30.5" y1="22" x2="30.5" y2="26" stroke="#F39C12" stroke-width="1.5"/><circle cx="30.5" cy="19" r="1.5" fill="#E74C3C"/></svg>', t:'Sleeping Sun'},
+
+    // 7. Moon Eating Star - 月亮偷吃星
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="12" fill="#F5F5DC"/><circle cx="10" cy="10" r="9" fill="#1a1a2e"/><circle cx="14" cy="15" r="2" fill="#333"/><circle cx="15" cy="14.5" r="0.8" fill="#fff"/><path d="M11 19 Q14 17 17 19" stroke="#333" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M21 11 L23 8 L25 12 L22 14 L25 16 L23 20 L21 17 L18 20 L16 16 L13 18 L15 14 L12 12 L15 8 Z" fill="#F4D03F" stroke="#F39C12" stroke-width="0.5"/><circle cx="20" cy="12" r="1.5" fill="#E74C3C"/><circle cx="19" cy="12" r="0.6" fill="#F4D03F"/><path d="M22 9 Q24 7 25 9" stroke="#E74C3C" stroke-width="1" fill="none"/></svg>', t:'Moon Eating Star'},
+
+    // 8. Crystal Ball Prophecy - 预言水晶球
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="27" width="16" height="6" rx="2" fill="#8B4513"/><rect x="12" y="23" width="12" height="5" rx="1" fill="#A0522D"/><circle cx="18" cy="15" r="11" fill="#C8E6F5" opacity="0.7"/><circle cx="18" cy="15" r="11" fill="none" stroke="#B0D4F1" stroke-width="2"/><circle cx="14" cy="11" r="3" fill="#fff" opacity=".5"/><circle cx="20" cy="17" r="4" fill="#8B4513"/><circle cx="20" cy="17" r="3" fill="#A0522D"/><circle cx="19" cy="16" r="1" fill="#5D3A1A"/><circle cx="21" cy="18" r="1" fill="#5D3A1A"/><path d="M18 20 Q19 21 20 20" stroke="#333" stroke-width="1" fill="none"/></svg>', t:'Crystal Ball Prophecy'},
+
+    // 9. Ghost Selfie - 自拍幽灵
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><path d="M8 30 Q8 12 18 10 Q28 12 28 30 Q26 27 24 30 Q22 27 20 30 Q18 27 16 30 Q14 27 12 30 Q10 27 8 30" fill="#ECF0F1" opacity="0.9"/><circle cx="14" cy="18" r="2.5" fill="#333"/><circle cx="22" cy="18" r="2.5" fill="#333"/><circle cx="14.5" cy="17.5" r="0.8" fill="#fff"/><circle cx="22.5" cy="17.5" r="0.8" fill="#fff"/><ellipse cx="18" cy="23" rx="3" ry="2" fill="#333"/><rect x="25" y="12" width="3" height="8" rx="1" fill="#BDC3C7" transform="rotate(25,26,16)"/><rect x="26" y="10" width="6" height="4" rx="1" fill="#333" transform="rotate(25,26,16)"/></svg>', t:'Ghost Selfie'},
+
+    // 10. Rainbow Chicken - 彩虹小鸡
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><ellipse cx="18" cy="22" rx="11" ry="10" fill="#F4D03F"/><circle cx="18" cy="14" r="8" fill="#F4D03F"/><path d="M15 7 Q18 4 21 7 Q18 5 15 7" fill="#E74C3C"/><circle cx="15" cy="13" r="2" fill="#333"/><circle cx="21" cy="13" r="2" fill="#333"/><circle cx="15.5" cy="12.5" r="0.7" fill="#fff"/><circle cx="21.5" cy="12.5" r="0.7" fill="#fff"/><path d="M16 17 L18 19 L20 17" fill="#F39C12"/><ellipse cx="10" cy="22" rx="4" ry="3" fill="#27AE60" opacity=".6"/><ellipse cx="26" cy="22" rx="4" ry="3" fill="#3498DB" opacity=".6"/><ellipse cx="18" cy="29" rx="3" ry="2" fill="#F39C12"/><line x1="16" y1="32" x2="15" y2="35" stroke="#F39C12" stroke-width="2.5" stroke-linecap="round"/><line x1="20" y1="32" x2="21" y2="35" stroke="#F39C12" stroke-width="2.5" stroke-linecap="round"/></svg>', t:'Rainbow Chicken'},
+
+    // 11. Stressed Waffle - 华夫饼急了
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="13" width="26" height="18" rx="3" fill="#D4A24E"/><path d="M5 18 L31 18 M5 23 L31 23 M5 28 L31 28 M11 13 L11 31 M17 13 L17 31 M23 13 L23 31" stroke="#C1923A" stroke-width="1.5"/><rect x="5" y="13" width="26" height="4" rx="2" fill="#E8B85A"/><line x1="12" y1="10" x2="14" y2="6" stroke="#E74C3C" stroke-width="2" stroke-linecap="round"/><line x1="18" y1="8" x2="18" y2="4" stroke="#E74C3C" stroke-width="2" stroke-linecap="round"/><line x1="24" y1="10" x2="22" y2="6" stroke="#E74C3C" stroke-width="2" stroke-linecap="round"/><line x1="10" y1="7" x2="12" y2="9" stroke="#E74C3C" stroke-width="1.5" stroke-linecap="round"/><line x1="24" y1="7" x2="22" y2="9" stroke="#E74C3C" stroke-width="1.5" stroke-linecap="round"/><circle cx="13" cy="20" r="2.5" fill="#333"/><circle cx="23" cy="20" r="2.5" fill="#333"/><circle cx="13.5" cy="19.5" r="0.8" fill="#E74C3C"/><circle cx="23.5" cy="19.5" r="0.8" fill="#E74C3C"/><path d="M13 26 Q18 23 23 26" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/></svg>', t:'Stressed Waffle'},
+
+    // 12. WiFi Love - WiFi恋爱
+    {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><rect x="16" y="22" width="4" height="8" rx="1" fill="#555"/><path d="M14 22 A8 8 0 0 1 22 22" stroke="#555" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M10 17 A13 13 0 0 1 26 17" stroke="#555" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M6 12 A18 18 0 0 1 30 12" stroke="#555" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="18" cy="25" r="1.5" fill="#E74C3C"/><path d="M11 29 Q13 26 15 29 Q17 32 19 29 Q21 26 23 29 Q25 32 27 29 Q29 26 30 29" stroke="#E74C3C" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M8 26 Q10 23 12 26 Q14 29 16 26 Q18 23 20 26 Q22 29 24 26 Q26 23 28 26" stroke="#E91E63" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".7"/><path d="M4 22 Q7 18 10 22 Q13 26 16 22 Q19 18 22 22 Q25 26 28 22 Q31 18 34 22" stroke="#E91E63" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".4"/><path d="M6 18 Q9 14 12 18 Q15 22 18 18 Q21 14 24 18 Q27 22 30 18" stroke="#E91E63" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".4"/></svg>', t:'WiFi Love'},
+  ];
+  emojis.forEach(function(e) {
+    var item = document.createElement('div');
+    item.className = 'emoji-item';
+    item.innerHTML = e.s;
+    item.title = e.t;
+    item.onclick = function() {
+      var inp = document.getElementById('msgInput');
+      if (inp) { inp.value += ' ' + e.s + ' '; inp.focus(); }
+      var panel = document.getElementById('emojiPanel');
+      if (panel) panel.classList.remove('open');
+    };
+    g.appendChild(item);
+  });
+}
+function insertEmoji(code) {
+  var inp = document.getElementById('msgInput');
+  if (inp) { inp.value += ' ' + code + ' '; inp.focus(); }
+}
+function toggleEmojiPanel() {
+  const p = document.getElementById('emojiPanel');
+  if (!p.classList.contains('open')) {
+    p.classList.add('open');
+    renderEmojiGrid();
+  } else {
+    p.classList.remove('open');
+  }
+}
+document.addEventListener('click', function(e) {
+  var panel = document.getElementById('emojiPanel');
+  var btn = document.getElementById('emojiBtn');
+  if (panel && btn && !panel.contains(e.target) && !btn.contains(e.target)) {
+    panel.classList.remove('open');
+  }
+});
+function renderEmojiGrid() {
+  var g = document.getElementById('emojiGrid');
+  if (!g || g.children.length > 0) return;
+  var emojis = [
     {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#FFD93D"/><circle cx="12" cy="14" r="2.5" fill="#333"/><circle cx="24" cy="14" r="2.5" fill="#333"/><path d="M10 22 Q18 30 26 22" stroke="#333" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>', t:'Happy'},
     {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#FFD93D"/><circle cx="12" cy="14" r="2.5" fill="#333"/><circle cx="24" cy="14" r="2.5" fill="#333"/><path d="M10 26 Q18 19 26 26" stroke="#333" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>', t:'Sad'},
     {s:'<svg class="chat-emoji" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="17" fill="#FFD93D"/><circle cx="12" cy="13" r="2.5" fill="#333"/><circle cx="24" cy="13" r="2.5" fill="#333"/><path d="M11 20 Q18 25 25 20" stroke="#333" stroke-width="2" fill="#ff6b6b" stroke-linecap="round"/><ellipse cx="18" cy="29" rx="8" ry="4" fill="#ff6b6b" opacity=".5"/></svg>', t:'Kiss'},
