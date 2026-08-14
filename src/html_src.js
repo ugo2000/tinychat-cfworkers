@@ -32,6 +32,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .err{color:#d32f2f;font-size:12px;margin-top:4px;min-height:16px;text-align:center}
 .header{background:#1a73e8;color:#fff;padding:10px 14px;display:flex;align-items:center;gap:8px;font-size:13px;flex-shrink:0;flex-wrap:wrap}
 .header .conn-dot{font-size:12px}
+.header .sound-btn{font-size:14px;background:none;border:none;cursor:pointer;padding:0 2px;vertical-align:middle}
 .header .my-name{font-size:12px;color:#1565c0;font-weight:600;padding:2px 8px;background:#e3f2fd;border-radius:10px;margin:0 4px}
 .header .online-count{margin-left:auto;font-size:12px;opacity:.85}
 .chat-header{display:flex;align-items:center;padding:6px 10px;background:#f8f9fa;border-bottom:1px solid #e0e0e0;gap:6px;flex-wrap:wrap;flex-shrink:0}
@@ -130,6 +131,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="pageChat" class="page">
 <div class="chat-header">
 <span class="conn-dot" id="connDot">&#128308;</span>
+<button class="sound-btn" id="soundBtn" onclick="toggleSound()" title="Toggle sound">&#128266;</button>
 <span class="my-name" id="myName"></span>
 <select id="privateTo" onchange="onSelectChange()"><option value="" data-i18n="selectPrivate">Public Chat</option></select>
 <div class="dm-target"><input id="dmInput" data-i18n="dmPlaceholder" placeholder="Username"><button id="dmBtn" onclick="applyDmInput()">DM</button></div>
@@ -182,7 +184,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 const wsUrl = 'wss://' + location.host + '/chat';
 const TINYCHAT_VER = '20260812-1810';
 (function(){ try { fetch('/api/version').then(r=>r.json()).then(d=>{ if(d&&d.version&&d.version!==TINYCHAT_VER){ localStorage.setItem('tinychat_version', d.version); location.reload(true); } }).catch(()=>{}); } catch(e){} })();
-let ws, token, username, quota = 100, geo = '', manualClose = false;
+let ws, token, username, quota = 100, geo = '', manualClose = false, soundEnabled = true;
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playTone(freq, dur, vol) {
+  if (!soundEnabled) return;
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol || 0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + dur);
+  } catch(e) {}
+}
+function playMsgSound() { playTone(880, 0.12, 0.2); }
+function playNotifSound() { playTone(523, 0.08, 0.15); playTone(659, 0.08, 0.15); }
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  const btn = document.getElementById('soundBtn');
+  if (btn) btn.innerHTML = soundEnabled ? '&#128266;' : '&#128263;';
+  localStorage.setItem('tinychat_sound', soundEnabled ? '1' : '0');
+}
 let reconnectTimer = null, reconnectAttempts = 0;
 let privateTo = '', randomPeer = null, randomFinding = false;
 let lang = localStorage.getItem('tinychat_lang') || 'en';
@@ -417,14 +445,17 @@ function handleWSMessage(msg) {
     updateMyName();
   } else if (msg.type === 'message') {
     addMessage({...msg, direction: msg.username === username ? 'outgoing' : 'incoming'});
+    if (msg.username !== username) playMsgSound();
   } else if (msg.type === 'online') {
     addOnlineUser({username:msg.username, geo:msg.geo});
     addSystem(msg.username + ' joined');
+    if (msg.username !== username) playNotifSound();
   } else if (msg.type === 'offline') {
     removeMember(msg.username);
     addSystem(msg.username + ' left');
   } else if (msg.type === 'private') {
     addMessage({...msg, direction: msg.from === username ? 'outgoing' : 'incoming', private:true});
+    playNotifSound();
   } else if (msg.type === 'quota') {
     const wasLimited = quota > 0;
     quota = msg.quota;
@@ -716,6 +747,9 @@ function doLogout() {
   token = localStorage.getItem('tinychat_token');
   username = localStorage.getItem('tinychat_username');
   lang = localStorage.getItem('tinychat_lang') || 'zh';
+  soundEnabled = localStorage.getItem('tinychat_sound') !== '0';
+  const sb = document.getElementById('soundBtn');
+  if (sb) sb.innerHTML = soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07';
   // Sanitize localStorage pollution from old buggy versions
   if (token === 'undefined' || token === 'null' || token === '') {
     localStorage.removeItem('tinychat_token'); localStorage.removeItem('tinychat_username');
