@@ -920,13 +920,17 @@ async function loadPending(){
       const Q=String.fromCharCode(39);
       let screenshotHtml='';
       if(p.screenshot&&p.screenshot.startsWith('data:image/')){
-        screenshotHtml='<img src="'+esc(p.screenshot)+'" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #ddd;cursor:pointer" onclick="window.open(\''+esc(p.screenshot)+'\',\'_blank\')" title="Click to enlarge">';
+        screenshotHtml='<img data-full-src="'+p.screenshot+'" src="'+p.screenshot+'" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #ddd;cursor:pointer" title="Click to enlarge">';
       } else {
         screenshotHtml='<span style="color:#e53935;font-size:12px">No screenshot</span>';
       }
       div.innerHTML='<span><b>'+esc(p.username)+'</b> - '+esc(p.pkg||'')+' ('+new Date(p.ts).toLocaleString()+')</span>'+screenshotHtml+'<button onclick="approvePay('+Q+esc(p.username)+Q+','+Q+esc(p.pkg||'')+Q+')">Approve</button>';
       area.appendChild(div);
     });
+    area.onclick=function(e){
+      const img=e.target&&e.target.closest&&e.target.closest('img[data-full-src]');
+      if(img)window.open(img.getAttribute('data-full-src'),'_blank');
+    };
   } catch(e){}
 }
 async function approvePay(u,pkg){
