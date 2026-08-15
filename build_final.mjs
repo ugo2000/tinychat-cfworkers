@@ -6,20 +6,16 @@ const base = 'C:/Users/Administrator/.qclaw/workspace-agent-7ac59ebd/chat-app-wo
 const htmlSrc = readFileSync(base + 'src/html_src.js', 'utf8');
 
 function escapeScriptEnd(html) {
-  let result = '', pos = 0;
-  while (pos < html.length) {
-    const scriptStart = html.indexOf('<script>', pos);
-    if (scriptStart < 0) { result += html.substring(pos); break; }
-    result += html.substring(pos, scriptStart + '<script>'.length);
-    const scriptEnd = html.indexOf('</script>', scriptStart);
-    if (scriptEnd < 0) { result += html.substring(scriptStart + '<script>'.length); break; }
-    const content = html.substring(scriptStart + '<script>'.length, scriptEnd);
-    result += content.replace(/<\/script>/g, '\\x3c/script>');
-    result += '</script>';
-    pos = scriptEnd + '</script>'.length;
-  }
-  return result;
+  // Escape </script> so inline script text doesn't close the <script> tag.
+  // Replace backtick with JS string concatenation: '' + String.fromCharCode(96) + ''
+  // produces a backtick at runtime. This avoids template-literal boundary issues.
+  return html
+    .replace(/<\/script>/gi, '<\\/script>')
+    .replace(/\\`/g, "''` + String.fromCharCode(96) + `''");
 }
+
+
+
 
 // Robust template-literal extractor: handles ` inside ${} and String.fromCharCode(96)
 function extractTemplates(src) {
@@ -64,26 +60,32 @@ function extractTemplates(src) {
     }
     if (depth === 0) {
       const raw = src.substring(bp, p); // content between opening and closing `
-      if (raw.includes('<!DOCTYPE') || raw.includes('<?xml')) {
-        const esc = escapeScriptEnd(raw);
-        const before = (raw.match(/<\/script>/g) || []).length;
-        const after = (esc.match(/<\/script>/g) || []).length;
-        if (before !== after) console.log(' ', name, ': escaped', before - after, 'bare </script>');
-        result[name] = esc;
-      }
+      const hasBare = (raw.match(/<\/script>/g) || []).length;
+      // Escape ALL HTML templates (not just ones starting with <!DOCTYPE)
+      // so inline </script> in onclick attrs don't break the template literal
+      const esc = escapeScriptEnd(raw);
+      const afterEsc = (esc.match(/<\/script>/g) || []).length;
+      if (hasBare > 0) console.log(' ', name, ': escaped', hasBare - afterEsc, 'bare </script>');
+      result[name] = esc;
     }
     nameRe.lastIndex = p + 1;
   }
   return result;
 }
 
-const fixed = extractTemplates(htmlSrc);
-console.log('Templates extracted:', Object.keys(fixed).join(', '));
+const htmlBlocks = extractTemplates(htmlSrc);
+console.log('Templates extracted:', Object.keys(htmlBlocks).join(', '));
 
-const htmlBlocks = Object.entries(fixed)
-  .map(([k, v]) => `const ${k} = ${JSON.stringify(v)};`)
-  .join('\n');
-console.log('Templates fixed.');
+// Custom serializer that produces a valid JSON double-quoted string:
+// - backslash -> \\ (so it survives JSON roundtrip)
+// - double-quote -> \"
+// - newline/tab/cr -> \n/\t/\r
+// - backtick -> \x60 (JS string escape for char 96 = backtick)
+// This ensures the HTML template's embedded JS (which may contain backtick
+// in String.fromCharCode(96)+`...` pattern) round-trips correctly.
+// Serialize HTML template to JS double-quoted string.
+function safeStringify(html) { return JSON.stringify(html); }
+
 
 // ---- 4. WeChat helpers ----
 let wechat = readFileSync(base + 'src/wechat_src.js', 'utf8');
@@ -114,7 +116,7 @@ const bundle = [
   index,
   '',
   '// ---- HTML template constants (at end for file size, not execution order) ----',
-  htmlBlocks,
+  ...Object.entries(htmlBlocks).map(([name, content]) => `const ${name} = ${safeStringify(content)};`),
   '',
 ].join('\n');
 
