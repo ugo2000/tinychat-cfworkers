@@ -6,63 +6,48 @@ const base = 'C:/Users/Administrator/.qclaw/workspace-agent-7ac59ebd/chat-app-wo
 const htmlSrc = readFileSync(base + 'src/html_src.js', 'utf8');
 
 function escapeScriptEnd(html) {
-  // Escape </script> so inline script text doesn't close the <script> tag.
-  // Replace backtick with JS string concatenation: '' + String.fromCharCode(96) + ''
-  // produces a backtick at runtime. This avoids template-literal boundary issues.
+  // Escape </script> and <script> so inline script text doesn't close/open
+  // the <script> tag when the browser parses the HTML.
+  // Replace \` (escaped backtick in source template literal) with '\x60'.
+  // '\x60' in JS source = \x60 in string = backtick (char 96) after eval.
   return html
     .replace(/<\/script>/gi, '<\\/script>')
-    .replace(/\\`/g, "''` + String.fromCharCode(96) + `''");
+    .replace(/<script>/gi, '<\\/script>')
+    .replace(/\\`/g, '\\x60');
 }
 
-
-
-
-// Robust template-literal extractor: handles ` inside ${} and String.fromCharCode(96)
+// Robust template-literal extractor: handles ` in ${} and String.fromCharCode(96)
 function extractTemplates(src) {
   const result = {};
-  // Match: export const NAME = ` or export const NAME = `
   const nameRe = /export\s+const\s+([A-Z_][A-Z0-9_]*)\s*=/gi;
   let nameMatch;
   while ((nameMatch = nameRe.exec(src)) !== null) {
     const name = nameMatch[1];
-    const openPos = nameMatch.index + nameMatch[0].length; // after '='
-    // Find the opening backtick (may have spaces)
+    const openPos = nameMatch.index + nameMatch[0].length;
     let bp = openPos;
     while (bp < src.length && src[bp] === ' ') bp++;
-    // Some pages may have a leading backslash before the opening backtick (e.g. \`...`)
-    // Handle this by skipping past any leading escape sequence
     while (bp < src.length) {
       if (src[bp] === ' ') { bp++; continue; }
       if (src[bp] === '\\' && bp + 1 < src.length && src[bp + 1] === '`') { bp += 2; continue; }
       if (src[bp] === '`') { bp++; break; }
       break;
     }
-    if (bp >= src.length || src[bp - 1] !== '`') continue; // not a template literal
+    if (bp >= src.length || src[bp - 1] !== '`') continue;
     let depth = 1, p = bp;
     while (p < src.length && depth > 0) {
       const ch = src[p];
       if (ch === '`') {
-        // Check if this backtick is escaped (preceded by odd number of backslashes)
         let q = p - 1;
         while (q >= 0 && src[q] === '\\') q--;
         const escaped = ((p - 1 - q) % 2 === 1);
-        if (!escaped) {
-          depth--;
-          if (depth === 0) break;
-        }
-      } else if (ch === '$' && p + 1 < src.length && src[p + 1] === '{') {
-        depth++;
-        p++;
-      } else if (ch === '\\') {
-        p++; // skip escaped char (including \`)
-      }
+        if (!escaped) { depth--; if (depth === 0) break; }
+      } else if (ch === '$' && p + 1 < src.length && src[p + 1] === '{') { depth++; p++; }
+      else if (ch === '\\') { p++; }
       p++;
     }
     if (depth === 0) {
-      const raw = src.substring(bp, p); // content between opening and closing `
+      const raw = src.substring(bp, p);
       const hasBare = (raw.match(/<\/script>/g) || []).length;
-      // Escape ALL HTML templates (not just ones starting with <!DOCTYPE)
-      // so inline </script> in onclick attrs don't break the template literal
       const esc = escapeScriptEnd(raw);
       const afterEsc = (esc.match(/<\/script>/g) || []).length;
       if (hasBare > 0) console.log(' ', name, ': escaped', hasBare - afterEsc, 'bare </script>');
@@ -76,16 +61,14 @@ function extractTemplates(src) {
 const htmlBlocks = extractTemplates(htmlSrc);
 console.log('Templates extracted:', Object.keys(htmlBlocks).join(', '));
 
-// Custom serializer that produces a valid JSON double-quoted string:
-// - backslash -> \\ (so it survives JSON roundtrip)
-// - double-quote -> \"
-// - newline/tab/cr -> \n/\t/\r
-// - backtick -> \x60 (JS string escape for char 96 = backtick)
-// This ensures the HTML template's embedded JS (which may contain backtick
-// in String.fromCharCode(96)+`...` pattern) round-trips correctly.
-// Serialize HTML template to JS double-quoted string.
-function safeStringify(html) { return JSON.stringify(html); }
-
+// Custom serializer: after escapeScriptEnd, each </script> became <\/script>.
+// JSON.stringify escapes \ to \\ . So \\/ becomes \\\\/ in the JSON source.
+// Browser JS engine: \\\\/ -> \\/ -> "</" (NOT a close tag).
+// Fix: replace \\\\\\/ (2 escaped backslashes + /) with \\\\/ (1 backslash + /)
+// This removes ONE backslash from each \/ sequence.
+function safeStringify(html) {
+  return JSON.stringify(html).replace(/\\\\\//g, '\\/');
+}
 
 // ---- 4. WeChat helpers ----
 let wechat = readFileSync(base + 'src/wechat_src.js', 'utf8');

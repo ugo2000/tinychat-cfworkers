@@ -1,12 +1,12 @@
 // ugochat - Cloudflare Workers + Durable Objects
-import HTML, { ADMIN_HTML, TEST_HTML, ABOUT_HTML, PRICING_HTML, FAQ_HTML, FEATURES_HTML, ANONYMOUS_HTML, RANDOM_HTML, ONLINE_HTML, PRIVACY_HTML, TERMS_HTML, SAFETY_HTML, SITEMAP_XML, ROBOTS_TXT } from './html.js';
+import HTML, { ADMIN_HTML, TEST_HTML, ABOUT_HTML, ABOUT_SCRIPT, PRICING_HTML, FAQ_HTML, FEATURES_HTML, ANONYMOUS_HTML, RANDOM_HTML, ONLINE_HTML, PRIVACY_HTML, TERMS_HTML, SAFETY_HTML, SITEMAP_XML, ROBOTS_TXT } from './html.js';
 import { isConfigured as wxConfigured, buildCtx as wxCtx, wechatUnifiedOrder as wxOrder, decryptResource as wxDecrypt, verifyNotify as wxVerify } from './wechat.js';
 
 const BAD_WORDS = ['fuck','shit','ass','bitch','damn','crap','dick','piss',
   'slut','whore','nigger','fag','asshole','bastard','cock','cunt',
   'fuckyou','fck','wtf','stfu','cao','sb'];
 
-const APP_VERSION = '20260815-0930';
+const APP_VERSION = '20260816-0945';
 
 const SECRET = new TextEncoder().encode('tinychat-hmac-secret-2026');
 
@@ -162,7 +162,9 @@ export default {
     }
 
     if (path === '/about') {
-      return new Response(ABOUT_HTML, {
+      // Inject the page-specific script into the HTML
+      const aboutHtml = ABOUT_HTML.replace('</body>', '<script>' + ABOUT_SCRIPT + '</script></body>');
+      return new Response(aboutHtml, {
         headers: {
           'Content-Type': 'text/html; charset=utf-8',
           'Cache-Control': 'no-cache, no-store, must-revalidate',
